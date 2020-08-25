@@ -3,7 +3,7 @@
 from odoo import models, fields, api
 
 
-class duplicate_change(models.Model):
+class duplicate_change_order(models.Model):
     _name = 'purchase.order'
     _inherit = 'purchase.order'
 
@@ -12,9 +12,9 @@ class duplicate_change(models.Model):
         default.update({
             'user_id': self._uid,
         })
-        return super(duplicate_change, self).copy(default)
+        return super(duplicate_change_order, self).copy(default)
 
-class duplicate_change(models.Model):
+class duplicate_change_requisition(models.Model):
     _name = 'purchase.requisition'
     _inherit = 'purchase.requisition'
 
@@ -23,4 +23,4 @@ class duplicate_change(models.Model):
         default.update({
             'user_id': self._uid,
         })
-        return super(duplicate_change, self).copy(default)
+        return super(duplicate_change_requisition, self).copy(default)
