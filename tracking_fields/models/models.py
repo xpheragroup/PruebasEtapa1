@@ -61,5 +61,10 @@ class tracking_field_overwriter(models.Model):
                             self.message_post(body=message.format(bank_name))
             if vals.get('child_ids'):
                 self.message_post(body='Se ha cambiado la información de los contactos.')
+            if vals.get('active'):
+                if vals['active']:
+                    self.message_post(body='El estado del contacto ha pasado a dearchivado.')
+                else:
+                    self.message_post(body='El estado del contacto ha pasado a archivado.')
         return write_result
 
