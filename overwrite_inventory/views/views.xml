@@ -19,7 +19,7 @@
               <button name="action_refresh_quantity" string="Refresh quantity" title="Refresh quantity" icon="fa-refresh" type="object" attrs="{'invisible': [('outdated', '=', False)]}"/>
               <field name="product_qty" width="0.5" string="Contado"/>
               <field name="difference_qty_2" invisible="1" optional="show" width="0.5" string="Diferencia"/>
-              <field name="showed_qty" width="0.5" string="Counted"/>
+              <field name="showed_qty" invisible="1" width="0.5" string="Counted"/>
               <field name="difference_qty" string="Diferencia" optional="show" width="0.5"/>
               <field name="product_uom_id" string="UdM" groups="uom.group_uom" width="0.3" force_save="1"/>
               <field name="inventory_id" invisible="1"/>
