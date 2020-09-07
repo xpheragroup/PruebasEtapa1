@@ -8,6 +8,55 @@ from odoo.addons.base.models.ir_model import MODULE_UNINSTALL_FLAG
 class Inventory(models.Model):
     _inherit = "stock.inventory"
 
+    AJUSTES = [('conteo', 'Por conteo'), ('diferencia','Por diferencia')]
+    ajuste = fields.Selection(AJUSTES, 
+        string='Tipo de ajuste',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        help="Tipo de ajuste del inventario.")
+
+    def action_open_inventory_lines(self):
+        self.ensure_one()
+        if self.ajuste == 'conteo':
+            action = {
+                'type': 'ir.actions.act_window',
+                'views': [(self.env.ref('overwrite_inventory.stock_inventory_line_tree3').id, 'tree')],
+                'view_mode': 'tree',
+                'name': _('Inventory Lines'),
+                'res_model': 'stock.inventory.line',
+            }
+        else:
+            action = {
+                'type': 'ir.actions.act_window',
+                'views': [(self.env.ref('overwrite_inventory.stock_inventory_line_tree4').id, 'tree')],
+                'view_mode': 'tree',
+                'name': _('Inventory Lines'),
+                'res_model': 'stock.inventory.line',
+            }
+        context = {
+            'default_is_editable': True,
+            'default_inventory_id': self.id,
+            'default_company_id': self.company_id.id,
+        }
+        # Define domains and context
+        domain = [
+            ('inventory_id', '=', self.id),
+            ('location_id.usage', 'in', ['internal', 'transit'])
+        ]
+        if self.location_ids:
+            context['default_location_id'] = self.location_ids[0].id
+            if len(self.location_ids) == 1:
+                if not self.location_ids[0].child_ids:
+                    context['readonly_location_id'] = True
+
+        if self.product_ids:
+            if len(self.product_ids) == 1:
+                context['default_product_id'] = self.product_ids[0].id
+
+        action['context'] = context
+        action['domain'] = domain
+        return action
+
     def _get_inventory_lines_values(self):
         # TDE CLEANME: is sql really necessary ? I don't think so
         locations = self.env['stock.location']
@@ -48,7 +97,7 @@ class Inventory(models.Model):
                 product_data[void_field] = False
             product_data['theoretical_qty'] = product_data['product_qty']
             if self.prefill_counted_quantity == 'zero':
-                product_data['product_qty'] = 0
+                product_data['product_qty'] = 0 + product_data['difference_qty_2']
             if product_data['product_id']:
                 product_data['product_uom_id'] = Product.browse(product_data['product_id']).uom_id.id
                 quant_products |= Product.browse(product_data['product_id'])
@@ -72,3 +121,53 @@ class InventoryLine(models.Model):
     _inherit = "stock.inventory.line"
 
     revisado = fields.Boolean('Revisado', required=True)
+
+    showed_qty = fields.Float('Contado',
+        help="Campo que muestra la cantidad contada.",
+        compute="update_showed_quantity",
+        digits='Product Unit of Measure', default=0)
+    
+    difference_qty_2 = fields.Float('Diferencia',
+        help="Diferencia ingresada para el cálculo de la cantidad contada.",
+        digits='Product Unit of Measure', default=0)
+
+    @api.onchange('difference_qty_2')
+    def update_quantity_by_difference(self):
+        for line in self:
+            line.product_qty = line.theoretical_qty + line.difference_qty_2
+
+    @api.onchange('product_qty')
+    def update_showed_quantity(self):
+        for line in self:
+            line.showed_qty = line.product_qty
+    
+    @api.onchange('product_id', 'location_id', 'product_uom_id', 'prod_lot_id', 'partner_id', 'package_id')
+    def _onchange_quantity_context(self):
+        product_qty = False
+        if self.product_id:
+            self.product_uom_id = self.product_id.uom_id
+        if self.product_id and self.location_id and self.product_id.uom_id.category_id == self.product_uom_id.category_id:  # TDE FIXME: last part added because crash
+            theoretical_qty = self.product_id.get_theoretical_quantity(
+                self.product_id.id,
+                self.location_id.id,
+                lot_id=self.prod_lot_id.id,
+                package_id=self.package_id.id,
+                owner_id=self.partner_id.id,
+                to_uom=self.product_uom_id.id,
+            )
+        else:
+            theoretical_qty = 0
+        # Sanity check on the lot.
+        if self.prod_lot_id:
+            if self.product_id.tracking == 'none' or self.product_id != self.prod_lot_id.product_id:
+                self.prod_lot_id = False
+
+        if self.prod_lot_id and self.product_id.tracking == 'serial':
+            # We force `product_qty` to 1 for SN tracked product because it's
+            # the only relevant value aside 0 for this kind of product.
+            self.product_qty = 1
+        elif self.product_id and float_compare(self.product_qty, self.theoretical_qty, precision_rounding=self.product_uom_id.rounding) == 0:
+            # We update `product_qty` only if it equals to `theoretical_qty` to
+            # avoid to reset quantity when user manually set it.
+            self.product_qty = theoretical_qty + self.difference_qty_2
+        self.theoretical_qty = theoretical_qty

@@ -1,60 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-  <data>
-    <!-- explicit list view definition -->
-<!--
-    <record model="ir.ui.view" id="overwrite_inventory.list">
-      <field name="name">overwrite_inventory list</field>
-      <field name="model">overwrite_inventory.overwrite_inventory</field>
+  <record id="stock_inventory_line_tree3" model="ir.ui.view">
+      <field name="name">stock.inventory.line.tree3</field>
+      <field name="model">stock.inventory.line</field>
       <field name="arch" type="xml">
-        <tree>
-          <field name="name"/>
-          <field name="value"/>
-          <field name="value2"/>
-        </tree>
+          <tree default_order="location_id,product_id" editable="top" string="Inventory Details" js_class="inventory_validate_button" decoration-danger="product_qty != theoretical_qty" decoration-bf="is_editable">
+              <field name="company_id" invisible="1"/>
+              <field name="product_tracking" invisible="1"/>
+              <field name="is_editable" invisible="1"/>
+              <field name="outdated" invisible="1"/>
+              <field name="product_id" options="{'no_create': True}" width="1.6" readonly="context.get('default_product_id', False)" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
+              <field name="location_id" groups="stock.group_stock_multi_locations" options="{'no_create': True}" invisible="context.get('readonly_location_id', False)" readonly="context.get('readonly_location_id', False)" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
+              <field name="inventory_date" optional="hide" width="0.8"/>
+              <field name="prod_lot_id" groups="stock.group_production_lot" width="0.8" attrs="{'readonly': ['|', '|',                             ('product_tracking', '=', 'none'),                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}" context="{'default_product_id': product_id, 'default_company_id': company_id}" optional="show"/>
+              <field name="package_id" groups="stock.group_tracking_lot" width="0.8" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}" string="Package" optional="show"/>
+              <field name="partner_id" groups="stock.group_tracking_owner" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
+              <field name="theoretical_qty" string="A mano" width="0.5" force_save="1" readonly="1" optional="show"/>
+              <button name="action_refresh_quantity" string="Refresh quantity" title="Refresh quantity" icon="fa-refresh" type="object" attrs="{'invisible': [('outdated', '=', False)]}"/>
+              <field name="product_qty" width="0.5" string="Contado"/>
+              <field name="difference_qty_2" invisible="1" optional="show" width="0.5" string="Diferencia"/>
+              <field name="showed_qty" width="0.5" string="Counted"/>
+              <field name="difference_qty" string="Diferencia" optional="show" width="0.5"/>
+              <field name="product_uom_id" string="UdM" groups="uom.group_uom" width="0.3" force_save="1"/>
+              <field name="inventory_id" invisible="1"/>
+              <field name="state" invisible="1"/>
+              <field name="revisado" width="0.3" required="1"/>
+          </tree>
       </field>
-    </record>
--->
-
-    <!-- actions opening views on models -->
-<!--
-    <record model="ir.actions.act_window" id="overwrite_inventory.action_window">
-      <field name="name">overwrite_inventory window</field>
-      <field name="res_model">overwrite_inventory.overwrite_inventory</field>
-      <field name="view_mode">tree,form</field>
-    </record>
--->
-
-    <!-- server action to the one above -->
-<!--
-    <record model="ir.actions.server" id="overwrite_inventory.action_server">
-      <field name="name">overwrite_inventory server</field>
-      <field name="model_id" ref="model_overwrite_inventory_overwrite_inventory"/>
-      <field name="state">code</field>
-      <field name="code">
-        action = {
-          "type": "ir.actions.act_window",
-          "view_mode": "tree,form",
-          "res_model": model._name,
-        }
+  </record>
+  <record id="stock_inventory_line_tree4" model="ir.ui.view">
+      <field name="name">stock.inventory.line.tree4</field>
+      <field name="model">stock.inventory.line</field>
+      <field name="arch" type="xml">
+          <tree default_order="location_id,product_id" editable="top" string="Inventory Details" js_class="inventory_validate_button" decoration-danger="product_qty != theoretical_qty" decoration-bf="is_editable">
+              <field name="company_id" invisible="1"/>
+              <field name="product_tracking" invisible="1"/>
+              <field name="is_editable" invisible="1"/>
+              <field name="outdated" invisible="1"/>
+              <field name="product_id" options="{'no_create': True}" width="1.6" readonly="context.get('default_product_id', False)" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
+              <field name="location_id" groups="stock.group_stock_multi_locations" options="{'no_create': True}" invisible="context.get('readonly_location_id', False)" readonly="context.get('readonly_location_id', False)" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
+              <field name="inventory_date" optional="hide" width="0.8"/>
+              <field name="prod_lot_id" groups="stock.group_production_lot" width="0.8" attrs="{'readonly': ['|', '|',                             ('product_tracking', '=', 'none'),                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}" context="{'default_product_id': product_id, 'default_company_id': company_id}" optional="show"/>
+              <field name="package_id" groups="stock.group_tracking_lot" width="0.8" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}" string="Package" optional="show"/>
+              <field name="partner_id" groups="stock.group_tracking_owner" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
+              <field name="theoretical_qty" string="A mano" width="0.5" force_save="1" readonly="1" optional="show"/>
+              <button name="action_refresh_quantity" string="Refresh quantity" title="Refresh quantity" icon="fa-refresh" type="object" attrs="{'invisible': [('outdated', '=', False)]}"/>
+              <field name="product_qty" invisible="1" width="0.5" string="Counted"/>
+              <field name="difference_qty_2" optional="show" width="0.5" string="Diferencia"/>
+              <field name="showed_qty" width="0.5" string="Contado"/>
+              <field name="difference_qty" invisible="1" optional="show" width="0.5"/>
+              <field name="product_uom_id" string="UdM" groups="uom.group_uom" width="0.3" force_save="1"/>
+              <field name="inventory_id" invisible="1"/>
+              <field name="state" invisible="1"/>
+              <field name="revisado" width="0.3" required="1"/>
+          </tree>
       </field>
+  </record>
+  <record id="stock.view_inventory_form" model="ir.ui.view">
+        <field name="name">stock.inventory.form</field>
+        <field name="model">stock.inventory</field>
+        <field name="arch" type="xml">
+            <form string="Inventory Adjustment">
+            <header>
+                <button name="action_start" states="draft" string="Start Inventory" type="object" class="oe_highlight" groups="stock.group_stock_user"/>
+                <button name="action_open_inventory_lines" states="confirm" string="Continue Inventory" type="object" class="oe_highlight" groups="stock.group_stock_user"/>
+                <button name="action_validate" string="Validate Inventory" type="object" attrs="{'invisible': ['|', ('state', '!=', 'confirm'), ('line_ids', '!=', [])]}" groups="stock.group_stock_manager"/>
+                <button name="action_validate" string="Validate Inventory" type="object" attrs="{'invisible': ['|', ('state', '!=', 'confirm'), ('line_ids', '=', [])]}" class="oe_highlight" groups="stock.group_stock_manager"/>
+                <button name="action_cancel_draft" states="cancel" string="Set to Draft" type="object"/>
+                <button name="action_cancel_draft" states="confirm" string="Cancel Inventory" type="object"
+                    confirm="If you cancel this inventory adjustment, all its inventory adjustment lines will be lost. Are you sure you want to discard it ?"/>
+                <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
+            </header>
+            <sheet>
+                <field name="line_ids" invisible="1"/>
+                <div class="oe_button_box" name="button_box">
+                    <button string="Product Moves" type="object"
+                            name="action_view_related_move_lines"
+                            class="oe_stat_button" icon="fa-exchange"
+                            attrs="{'invisible': [('state', '!=', 'done')]}"
+                            context="{'no_reference': True}"/>
+                </div>
+                <div class="oe_title">
+                    <label for="name" class="oe_edit_only"/>
+                    <h1><field name="name" placeholder="e.g. Annual inventory"/></h1>
+                </div>
+                <group>
+                    <group>
+                        <field name="location_ids" options="{'no_create': True}"
+                               widget="many2many_tags"
+                               force_save="1"
+                               groups="stock.group_stock_multi_locations"/>
+                        <field name="product_ids" options="{'no_create': True}"
+                               widget="many2many_tags"/>
+                        <field name="ajuste" options="{'no_create': True}"
+                               widget="selection"
+                               string="Tipo de ajuste"/>
+                    </group>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                        <field name="prefill_counted_quantity" widget="radio"
+                               attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    </group>
+                </group>
+            </sheet>
+            </form>
+        </field>
     </record>
--->
-
-    <!-- Top menu item -->
-<!--
-    <menuitem name="overwrite_inventory" id="overwrite_inventory.menu_root"/>
--->
-    <!-- menu categories -->
-<!--
-    <menuitem name="Menu 1" id="overwrite_inventory.menu_1" parent="overwrite_inventory.menu_root"/>
-    <menuitem name="Menu 2" id="overwrite_inventory.menu_2" parent="overwrite_inventory.menu_root"/>
--->
-    <!-- actions -->
-<!--
-    <menuitem name="List" id="overwrite_inventory.menu_1_list" parent="overwrite_inventory.menu_1"
-              action="overwrite_inventory.action_window"/>
-    <menuitem name="Server to list" id="overwrite_inventory" parent="overwrite_inventory.menu_2"
-              action="overwrite_inventory.action_server"/>
--->
-  </data>
 </odoo>
