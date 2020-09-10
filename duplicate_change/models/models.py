@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 from odoo import models, fields, api
 
 
@@ -11,7 +12,8 @@ class duplicate_change_order(models.Model):
         default = dict(default or {})
         default.update({
             'user_id': self._uid,
-        })
+            'date_planned': datetime.datetime(year=2220, month=1, day=1)
+        })  
         return super(duplicate_change_order, self).copy(default)
 
 class duplicate_change_requisition(models.Model):
