@@ -15,12 +15,12 @@
               <field name="prod_lot_id" groups="stock.group_production_lot" width="0.8" attrs="{'readonly': ['|', '|',                             ('product_tracking', '=', 'none'),                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}" context="{'default_product_id': product_id, 'default_company_id': company_id}" optional="show"/>
               <field name="package_id" groups="stock.group_tracking_lot" width="0.8" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}" string="Package" optional="show"/>
               <field name="partner_id" groups="stock.group_tracking_owner" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
-              <field name="theoretical_qty" string="A mano" width="0.5" force_save="1" readonly="1" optional="show"/>
+              <field name="theoretical_qty" invisible="1" string="A mano" width="0.5" force_save="1" readonly="1" optional="show"/>
               <button name="action_refresh_quantity" string="Refresh quantity" title="Refresh quantity" icon="fa-refresh" type="object" attrs="{'invisible': [('outdated', '=', False)]}"/>
               <field name="product_qty" width="0.5" string="Contado"/>
               <field name="difference_qty_2" invisible="1" optional="show" width="0.5" string="Diferencia"/>
               <field name="showed_qty" invisible="1" width="0.5" string="Counted"/>
-              <field name="difference_qty" string="Diferencia" optional="show" width="0.5"/>
+              <field name="difference_qty" invisible="1" string="Diferencia" optional="show" width="0.5"/>
               <field name="product_uom_id" string="UdM" groups="uom.group_uom" width="0.3" force_save="1"/>
               <field name="inventory_id" invisible="1"/>
               <field name="state" invisible="1"/>
@@ -48,6 +48,34 @@
               <field name="product_qty" invisible="1" width="0.5" string="Counted"/>
               <field name="difference_qty_2" optional="show" width="0.5" string="Diferencia"/>
               <field name="showed_qty" width="0.5" string="Contado"/>
+              <field name="difference_qty" invisible="1" optional="show" width="0.5"/>
+              <field name="product_uom_id" string="UdM" groups="uom.group_uom" width="0.3" force_save="1"/>
+              <field name="inventory_id" invisible="1"/>
+              <field name="state" invisible="1"/>
+              <field name="revisado" width="0.3" required="1"/>
+          </tree>
+      </field>
+  </record>
+  <record id="stock_inventory_line_tree5" model="ir.ui.view">
+      <field name="name">stock.inventory.line.tree4</field>
+      <field name="model">stock.inventory.line</field>
+      <field name="arch" type="xml">
+          <tree default_order="location_id,product_id" editable="top" string="Inventory Details" js_class="inventory_validate_button" decoration-danger="product_qty != theoretical_qty" decoration-bf="is_editable">
+              <field name="company_id" invisible="1"/>
+              <field name="product_tracking" invisible="1"/>
+              <field name="is_editable" invisible="1"/>
+              <field name="outdated" invisible="1"/>
+              <field name="product_id" options="{'no_create': True}" width="1.6" readonly="context.get('default_product_id', False)" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
+              <field name="location_id" groups="stock.group_stock_multi_locations" options="{'no_create': True}" invisible="context.get('readonly_location_id', False)" readonly="context.get('readonly_location_id', False)" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
+              <field name="inventory_date" optional="hide" width="0.8"/>
+              <field name="prod_lot_id" groups="stock.group_production_lot" width="0.8" attrs="{'readonly': ['|', '|',                             ('product_tracking', '=', 'none'),                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}" context="{'default_product_id': product_id, 'default_company_id': company_id}" optional="show"/>
+              <field name="package_id" groups="stock.group_tracking_lot" width="0.8" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}" string="Package" optional="show"/>
+              <field name="partner_id" groups="stock.group_tracking_owner" attrs="{'readonly': ['|',                             ('is_editable', '=', False),                             ('state', '!=', 'confirm')]}"/>
+              <field name="theoretical_qty" string="A mano" width="0.5" force_save="1" readonly="1" optional="show"/>
+              <button name="action_refresh_quantity" string="Refresh quantity" title="Refresh quantity" icon="fa-refresh" type="object" attrs="{'invisible': [('outdated', '=', False)]}"/>
+              <field name="product_qty" invisible="1" width="0.5" string="Counted"/>
+              <field name="perdida" optional="show" width="0.5" string="Pérdida"/>
+              <field name="showed_qty" invisible="1" width="0.5" string="Contado"/>
               <field name="difference_qty" invisible="1" optional="show" width="0.5"/>
               <field name="product_uom_id" string="UdM" groups="uom.group_uom" width="0.3" force_save="1"/>
               <field name="inventory_id" invisible="1"/>

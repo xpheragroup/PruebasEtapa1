@@ -8,7 +8,7 @@ from odoo.addons.base.models.ir_model import MODULE_UNINSTALL_FLAG
 class Inventory(models.Model):
     _inherit = "stock.inventory"
 
-    AJUSTES = [('conteo', 'Por conteo'), ('diferencia','Por diferencia')]
+    AJUSTES = [('conteo', 'Por conteo'), ('diferencia','Por diferencia'), ('baja','Baja de inventario')]
     ajuste = fields.Selection(AJUSTES, 
         string='Tipo de ajuste',
         readonly=True,
@@ -21,6 +21,14 @@ class Inventory(models.Model):
             action = {
                 'type': 'ir.actions.act_window',
                 'views': [(self.env.ref('overwrite_inventory.stock_inventory_line_tree3').id, 'tree')],
+                'view_mode': 'tree',
+                'name': _('Inventory Lines'),
+                'res_model': 'stock.inventory.line',
+            }
+        elif self.ajuste == 'baja':
+            action = {
+                'type': 'ir.actions.act_window',
+                'views': [(self.env.ref('overwrite_inventory.stock_inventory_line_tree5').id, 'tree')],
                 'view_mode': 'tree',
                 'name': _('Inventory Lines'),
                 'res_model': 'stock.inventory.line',
@@ -107,11 +115,14 @@ class Inventory(models.Model):
     def _action_done(self):
         negative = next((line for line in self.mapped('line_ids') if line.product_qty < 0 and line.product_qty != line.theoretical_qty), False)
         not_checked = next((line for line in self.mapped('line_ids') if not line.revisado), False)
+        negative_lost = next((line for line in self.mapped('line_ids') if line.perdida < 0), False)
         print(not_checked)
         if negative:
             raise UserError(_('You cannot set a negative product quantity in an inventory line:\n\t%s - qty: %s') % (negative.product_id.name, negative.product_qty))
         if not_checked:
             raise UserError(_('No se ha revisado algún producto.'))
+        if negative_lost:
+            raise UserError(_('Algún producto tiene pérdida negativa.'))
         self.action_check()
         self.write({'state': 'done'})
         self.post_inventory()
@@ -130,6 +141,15 @@ class InventoryLine(models.Model):
     difference_qty_2 = fields.Float('Diferencia',
         help="Diferencia ingresada para el cálculo de la cantidad contada.",
         digits='Product Unit of Measure', default=0)
+
+    perdida = fields.Float('Pérdida',
+        help="Productos perdidos.",
+        digits='Product Unit of Measure', default=0)
+
+    @api.onchange('perdida')
+    def update_quantity_by_perdida(self):
+        for line in self:
+            line.product_qty = line.theoretical_qty - line.perdida
 
     @api.onchange('difference_qty_2')
     def update_quantity_by_difference(self):
