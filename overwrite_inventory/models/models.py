@@ -105,7 +105,8 @@ class Inventory(models.Model):
                 product_data[void_field] = False
             product_data['theoretical_qty'] = product_data['product_qty']
             if self.prefill_counted_quantity == 'zero':
-                product_data['product_qty'] = 0 + product_data['difference_qty_2']
+                if 'difference_qty_2' in product_data.keys():
+                    product_data['product_qty'] = 0 + product_data['difference_qty_2']
             if product_data['product_id']:
                 product_data['product_uom_id'] = Product.browse(product_data['product_id']).uom_id.id
                 quant_products |= Product.browse(product_data['product_id'])
