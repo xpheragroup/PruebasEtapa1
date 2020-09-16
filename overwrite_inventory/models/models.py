@@ -194,3 +194,138 @@ class InventoryLine(models.Model):
             # avoid to reset quantity when user manually set it.
             self.product_qty = theoretical_qty + self.difference_qty_2
         self.theoretical_qty = theoretical_qty
+
+class StockScrap(models.Model):
+    _inherit = 'stock.scrap'
+
+    state = fields.Selection([
+        ('draft', 'Elaboración'),
+        ('review', 'Revisión'),
+        ('auth', 'Autorización'),
+        ('approv', 'Aprovación'),
+        ('done', 'Done')],
+        string='Status', default="draft", readonly=True, tracking=True)
+
+    rule = {
+        'review': [('readonly', True)],
+        'auth': [('readonly', True)],
+        'approv': [('readonly', True)],
+        'done': [('readonly', True)],
+        }
+
+    company_id = fields.Many2one(states=rule, tracking=1)
+    product_id = fields.Many2one(states=rule, tracking=1)
+    origin = fields.Char(states=rule)
+    product_uom_id = fields.Many2one(states=rule, tracking=1)
+    lot_id = fields.Many2one(states=rule, tracking=1)
+    package_id = fields.Many2one(states=rule, tracking=1)
+    owner_id = fields.Many2one(states=rule, tracking=1)
+    picking_id = fields.Many2one(states=rule, tracking=1)
+    location_id = fields.Many2one(states=rule, tracking=1)
+    scrap_location_id = fields.Many2one(states=rule, tracking=1)
+    scrap_qty = fields.Float(states=rule, tracking=1)
+
+    motivo_de_baja = fields.Selection([
+        ('obs', 'Obsolecencia de Bien'),
+        ('da', 'Daño'),
+        ('fec', 'Fecha de Vencimiento'),
+        ('hur',	'Hurto')],
+        string='Motivo de Baja', states=rule, tracking=1)
+    
+    def to_review(self):
+        self._check_company()
+        for scrap in self:
+            scrap.name = self.env['ir.sequence'].next_by_code('stock.scrap') or _('New')
+            scrap.date_done = fields.Datetime.now()
+            scrap.write({'state': 'review'})
+        return True
+
+    def to_auth(self):
+        self._check_company()
+        for scrap in self:
+            scrap.write({'state': 'auth'})
+        return True
+    
+    def to_approv(self):
+        self._check_company()
+        for scrap in self:
+            scrap.write({'state': 'approv'})
+        return True
+    
+    def to_draft(self):
+        self._check_company()
+        for scrap in self:
+            scrap.write({'state': 'draft'})
+        return True
+
+    def do_scrap(self):
+        self._check_company()
+        for scrap in self:
+            move = self.env['stock.move'].create(scrap._prepare_move_values())
+            # master: replace context by cancel_backorder
+            move.with_context(is_scrap=True)._action_done()
+            scrap.write({'move_id': move.id, 'state': 'done'})
+        return True
+    
+
+    def _prepare_move_values(self):
+        self.ensure_one()
+        location_id = self.location_id.id
+        if self.picking_id and self.picking_id.picking_type_code == 'incoming':
+            location_id = self.picking_id.location_dest_id.id
+        return {
+            'name': self.name,
+            'origin': self.origin or self.picking_id.name or self.name,
+            'company_id': self.company_id.id,
+            'product_id': self.product_id.id,
+            'product_uom': self.product_uom_id.id,
+            'state': 'draft',
+            'product_uom_qty': self.scrap_qty,
+            'location_id': location_id,
+            'scrapped': True,
+            'location_dest_id': self.scrap_location_id.id,
+            'move_line_ids': [(0, 0, {'product_id': self.product_id.id,
+                                           'product_uom_id': self.product_uom_id.id, 
+                                           'qty_done': self.scrap_qty,
+                                           'location_id': location_id,
+                                           'location_dest_id': self.scrap_location_id.id,
+                                           'package_id': self.package_id.id, 
+                                           'owner_id': self.owner_id.id,
+                                           'lot_id': self.lot_id.id, })],
+#             'restrict_partner_id': self.owner_id.id,
+            'picking_id': self.picking_id.id
+        }
+
+    def action_validate(self):
+        self.ensure_one()
+        if self.product_id.type != 'product':
+            return self.do_scrap()
+        precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+        location_id = self.location_id
+        if self.picking_id and self.picking_id.picking_type_code == 'incoming':
+            location_id = self.picking_id.location_dest_id
+        available_qty = sum(self.env['stock.quant']._gather(self.product_id,
+                                                            location_id,
+                                                            self.lot_id,
+                                                            self.package_id,
+                                                            self.owner_id,
+                                                            strict=True).mapped('quantity'))
+        scrap_qty = self.product_uom_id._compute_quantity(self.scrap_qty, self.product_id.uom_id)
+        if float_compare(available_qty, scrap_qty, precision_digits=precision) >= 0:
+            return self.do_scrap()
+        else:
+            ctx = dict(self.env.context)
+            ctx.update({
+                'default_product_id': self.product_id.id,
+                'default_location_id': self.location_id.id,
+                'default_scrap_id': self.id
+            })
+            return {
+                'name': _('Insufficient Quantity'),
+                'view_mode': 'form',
+                'res_model': 'stock.warn.insufficient.qty.scrap',
+                'view_id': self.env.ref('stock.stock_warn_insufficient_qty_scrap_form_view').id,
+                'type': 'ir.actions.act_window',
+                'context': ctx,
+                'target': 'new'
+            }

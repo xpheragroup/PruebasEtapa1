@@ -134,4 +134,64 @@
             </form>
         </field>
     </record>
+
+    <record id="stock.stock_scrap_form_view" model="ir.ui.view">
+        <field name="name">stock.scrap.form</field>
+        <field name="model">stock.scrap</field>
+        <field name="arch" type="xml">
+            <form string="Scrap">
+                <header>
+                    <button name="action_validate" states="approv" string="Validate" type="object" class="oe_highlight" context="{'not_unlink_on_discard': True}"/>
+                    <button name="to_review" states="draft" string="A revisión" type="object" class="oe_highlight"/>
+                    <button name="to_auth" states="review" string="A autorización" type="object" class="oe_highlight"/>
+                    <button name="to_approv" states="auth" string="A Aprovación" type="object" class="oe_highlight"/>
+                    <button name="to_draft" states="review,auth,approv" string="A borrador" type="object"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" name="action_get_stock_picking"
+                                string="Stock Operation" type="object"
+                                attrs="{'invisible':[('picking_id','=',False)]}" icon="fa-cogs"/>
+                        <field name="picking_id" invisible="1"/>
+                        <button class="oe_stat_button" name="action_get_stock_move_lines"
+                                string="Traceability" type="object"
+                                attrs="{'invisible':[('move_id','=',False)]}" icon="fa-exchange"/>
+                        <field name="move_id" invisible="1"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" nolabel="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <label for="scrap_qty"/>
+                            <div class="o_row">
+                                <field name="scrap_qty"/>
+                                <field name="product_uom_category_id" invisible="1"/>
+                                <field name="product_uom_id" groups="uom.group_uom" force_save="1"/>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="lot_id" attrs="{'invisible': ['|',('product_id', '=', False),('tracking', '=', 'none')], 'required': [('tracking', '!=', 'none')]}" groups="stock.group_production_lot"/>
+                            <field name="tracking" invisible="1"/>
+                            <field name="package_id" groups="stock.group_tracking_lot"/>
+                            <field name="owner_id" groups="stock.group_tracking_owner"/>
+                            <field name="location_id" options="{'no_create': True, 'no_open': True}" groups="stock.group_stock_multi_locations" force_save="1"/>
+                            <field name="scrap_location_id" options="{'no_create': True, 'no_open': True}" groups="stock.group_stock_multi_locations" force_save="1"/>
+                            <field name="origin"/>
+                            <field name="date_done" attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                            <field name="picking_id" attrs="{'invisible': [('picking_id', '=', False)]}"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="motivo_de_baja" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
 </odoo>
