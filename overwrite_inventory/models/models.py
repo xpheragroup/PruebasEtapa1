@@ -135,6 +135,12 @@ class InventoryLine(models.Model):
     _inherit = "stock.inventory.line"
 
     revisado = fields.Boolean('Revisado', required=True)
+    motivo_de_baja = fields.Selection([
+        ('obs', 'Obsolecencia de Bien'),
+        ('da', 'Daño'),
+        ('fec', 'Fecha de Vencimiento'),
+        ('hur',	'Hurto')],
+        string='Motivo de Baja')
 
     showed_qty = fields.Float('Contado',
         help="Campo que muestra la cantidad contada.",
