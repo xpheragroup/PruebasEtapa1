@@ -184,7 +184,7 @@
                     <button name="action_validate" states="approv" string="Validate" type="object" class="oe_highlight" context="{'not_unlink_on_discard': True}"/>
                     <button name="to_review" states="draft" string="A revisión" type="object" class="oe_highlight"/>
                     <button name="to_auth" states="review" string="A autorización" type="object" class="oe_highlight"/>
-                    <button name="to_approv" states="auth" string="A Aprovación" type="object" class="oe_highlight"/>
+                    <button name="to_approv" states="auth" string="A Aprobación" type="object" class="oe_highlight"/>
                     <button name="to_draft" states="review,auth,approv" string="A borrador" type="object"/>
                     <field name="state" widget="statusbar"/>
                 </header>
