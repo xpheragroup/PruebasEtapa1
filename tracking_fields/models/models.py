@@ -49,7 +49,7 @@ class tracking_field_overwriter(models.Model):
     def write(self, vals):
         write_result = super(tracking_field_overwriter, self).write(vals)
         if write_result:
-            if vals.get('bank_ids'):
+            if vals.get('bank_ids') is not None:
                 for bank_ids_change in vals['bank_ids']:
                     if bank_ids_change[2]:
                         if 'acc_number' in bank_ids_change[2]:
@@ -59,9 +59,9 @@ class tracking_field_overwriter(models.Model):
                             message = 'Se ha cambiado la cuenta bancaria a {}.'
                             bank_name = self.env['res.bank'].search([['id','=',bank_ids_change[2]['bank_id']]]).name
                             self.message_post(body=message.format(bank_name))
-            if vals.get('child_ids'):
+            if vals.get('child_ids') is not None:
                 self.message_post(body='Se ha cambiado la información de los contactos.')
-            if vals.get('active'):
+            if vals.get('active') is not None:
                 if vals['active']:
                     self.message_post(body='El estado del contacto ha pasado a dearchivado.')
                 else:
