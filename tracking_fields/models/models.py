@@ -107,7 +107,7 @@ class ProductOver(models.Model):
     seller_ids = fields.One2many(tracking=1)
     variant_seller_ids = fields.One2many(tracking=1)
 
-    active = fields.Boolean(tracking=1)
+    #active = fields.Boolean(tracking=1)
     color = fields.Integer(tracking=1)
 
     is_product_variant = fields.Boolean(tracking=1)
@@ -154,3 +154,14 @@ class ProductOver(models.Model):
     reordering_max_qty = fields.Float(tracking=1)
     # TDE FIXME: seems only visible in a view - remove me ?
     route_from_categ_ids = fields.Many2many(tracking=1)
+
+    # 2Many fields 
+    def write(self, vals):
+        write_result = super(ProductOver, self).write(vals)
+        if write_result:
+            if vals.get('active') is not None:
+                if vals['active']:
+                    self.message_post(body='El estado del producto ha pasado a dearchivado.')
+                else:
+                    self.message_post(body='El estado del producto ha pasado a archivado.')
+            
