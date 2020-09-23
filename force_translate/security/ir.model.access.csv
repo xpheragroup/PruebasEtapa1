@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_force_translate_force_translate,force_translate.force_translate,model_force_translate_force_translate,base.group_user,1,1,1,1

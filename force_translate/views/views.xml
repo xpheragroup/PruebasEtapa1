@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="force_translate.list">
+      <field name="name">force_translate list</field>
+      <field name="model">force_translate.force_translate</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="force_translate.action_window">
+      <field name="name">force_translate window</field>
+      <field name="res_model">force_translate.force_translate</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="force_translate.action_server">
+      <field name="name">force_translate server</field>
+      <field name="model_id" ref="model_force_translate_force_translate"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="force_translate" id="force_translate.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="force_translate.menu_1" parent="force_translate.menu_root"/>
+    <menuitem name="Menu 2" id="force_translate.menu_2" parent="force_translate.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="force_translate.menu_1_list" parent="force_translate.menu_1"
+              action="force_translate.action_window"/>
+    <menuitem name="Server to list" id="force_translate" parent="force_translate.menu_2"
+              action="force_translate.action_server"/>
+-->
+  </data>
+</odoo>
