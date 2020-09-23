@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Overwrite Purchase",
+    'name': "Force traanslate",
 
     'summary': """
         This module forces to make translate changes to fulfill requeriments.""",
