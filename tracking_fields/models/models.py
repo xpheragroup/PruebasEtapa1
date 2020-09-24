@@ -164,4 +164,22 @@ class ProductOver(models.Model):
                     self.message_post(body='El estado del producto ha pasado a dearchivado.')
                 else:
                     self.message_post(body='El estado del producto ha pasado a archivado.')
-            
+
+class ProductionOver(models.Model):
+    _inherit = 'mrp.production'
+
+    # 2Many fields
+    def write(self, vals):
+        write_result = super(ProductionOver, self).write(vals)
+        if write_result:
+            if vals.get('move_raw_ids') is not None:
+                message = '<p>Se han agregado los siguientes productos a la receta:</p><ul>'
+                original_components = set(map(lambda x: (x.id, x.product_tmpl_id.name), filter(lambda x: 'virtual' not in str(x), self.move_raw_ids)))
+                modified_components = set(map(lambda x: (x[1], self.env['stock.move'].search([['id', '=', x[1]]]).product_tmpl_id.name), filter(lambda x: 'virtual' not in str(x), vals['move_raw_ids'])))
+                mods = 0
+                for component in original_components - modified_components:
+                    mods += 1
+                    message += '<li>' + component[1] + '</li>'
+                message += '</ul>'
+                if mods > 0:
+                    self.message_post(body=message)
