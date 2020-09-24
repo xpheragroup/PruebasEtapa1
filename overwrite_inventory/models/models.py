@@ -244,7 +244,37 @@ class StockScrap(models.Model):
             scrap.name = self.env['ir.sequence'].next_by_code('stock.scrap') or _('New')
             scrap.date_done = fields.Datetime.now()
             scrap.write({'state': 'review'})
-        return True
+        if self.product_id.type != 'product':
+            return True
+        precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+        location_id = self.location_id
+        if self.picking_id and self.picking_id.picking_type_code == 'incoming':
+            location_id = self.picking_id.location_dest_id
+        available_qty = sum(self.env['stock.quant']._gather(self.product_id,
+                                                            location_id,
+                                                            self.lot_id,
+                                                            self.package_id,
+                                                            self.owner_id,
+                                                            strict=True).mapped('quantity'))
+        scrap_qty = self.product_uom_id._compute_quantity(self.scrap_qty, self.product_id.uom_id)
+        if float_compare(available_qty, scrap_qty, precision_digits=precision) >= 0:
+            return True
+        else:
+            ctx = dict(self.env.context)
+            ctx.update({
+                'default_product_id': self.product_id.id,
+                'default_location_id': self.location_id.id,
+                'default_scrap_id': self.id
+            })
+            return {
+                'name': _('Insufficient Quantity'),
+                'view_mode': 'form',
+                'res_model': 'stock.warn.insufficient.qty.scrap',
+                'view_id': self.env.ref('stock.stock_warn_insufficient_qty_scrap_form_view').id,
+                'type': 'ir.actions.act_window',
+                'context': ctx,
+                'target': 'new'
+            }
 
     def to_auth(self):
         self._check_company()
@@ -304,34 +334,13 @@ class StockScrap(models.Model):
 
     def action_validate(self):
         self.ensure_one()
-        if self.product_id.type != 'product':
-            return self.do_scrap()
-        precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
-        location_id = self.location_id
-        if self.picking_id and self.picking_id.picking_type_code == 'incoming':
-            location_id = self.picking_id.location_dest_id
-        available_qty = sum(self.env['stock.quant']._gather(self.product_id,
-                                                            location_id,
-                                                            self.lot_id,
-                                                            self.package_id,
-                                                            self.owner_id,
-                                                            strict=True).mapped('quantity'))
-        scrap_qty = self.product_uom_id._compute_quantity(self.scrap_qty, self.product_id.uom_id)
-        if float_compare(available_qty, scrap_qty, precision_digits=precision) >= 0:
-            return self.do_scrap()
-        else:
-            ctx = dict(self.env.context)
-            ctx.update({
-                'default_product_id': self.product_id.id,
-                'default_location_id': self.location_id.id,
-                'default_scrap_id': self.id
-            })
-            return {
-                'name': _('Insufficient Quantity'),
-                'view_mode': 'form',
-                'res_model': 'stock.warn.insufficient.qty.scrap',
-                'view_id': self.env.ref('stock.stock_warn_insufficient_qty_scrap_form_view').id,
-                'type': 'ir.actions.act_window',
-                'context': ctx,
-                'target': 'new'
-            }
+        return do_scrap()
+
+class StockWarnInsufficientQtyScrapOver(models.TransientModel):
+    _inherit = 'stock.warn.insufficient.qty.scrap'
+
+    def action_done(self):
+        return True
+
+    def action_cancel(self):
+        return self.scrap_id.to_draft()
