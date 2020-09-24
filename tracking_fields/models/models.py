@@ -173,13 +173,16 @@ class ProductionOver(models.Model):
         write_result = super(ProductionOver, self).write(vals)
         if write_result:
             if vals.get('move_raw_ids') is not None:
-                message = '<p>Se han agregado los siguientes productos a la receta:</p><ul>'
-                original_components = set(map(lambda x: (x.id, x.product_tmpl_id.name), filter(lambda x: 'virtual' not in str(x), self.move_raw_ids)))
-                modified_components = set(map(lambda x: (x[1], self.env['stock.move'].search([['id', '=', x[1]]]).product_tmpl_id.name), filter(lambda x: 'virtual' not in str(x), vals['move_raw_ids'])))
+                message = '<p>Se han hecho los siguientes cambios a la receta:</p><ul>'
                 mods = 0
-                for component in original_components - modified_components:
-                    mods += 1
-                    message += '<li>' + component[1] + '</li>'
+                for component in vals['move_raw_ids']:
+                    if component[2] != False:
+                        mods += 1
+                        if 'virtual' in str(component[1]):
+                            message += '<li>Se agrega el producto {}.</li>'.format(component[2]['name'])
+                        elif component[2].get('product_uom_qty') is not None:
+                            move = self.env['stock.move'].search([['id', '=', component[1]]])
+                            message += '<li>Se modifica la cantidad a usar del producto {}. De {} a {}.</li>'.format(move.product_tmpl_id.name, move.product_uom_qty, component[2]['product_uom_qty'])
                 message += '</ul>'
                 if mods > 0:
                     self.message_post(body=message)
