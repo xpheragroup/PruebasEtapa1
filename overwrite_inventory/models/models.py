@@ -208,7 +208,7 @@ class StockScrap(models.Model):
         ('draft', 'Elaboración'),
         ('review', 'Revisión'),
         ('auth', 'Autorización'),
-        ('approv', 'Aprovación'),
+        ('approv', 'Aprobación'),
         ('done', 'Done')],
         string='Status', default="draft", readonly=True, tracking=True)
 
