@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve" inherit_id="point_of_sale.template"> 
+    <t t-extend="PaymentScreen-Numpad">
+        <t t-jquery="button[data-action='-']" t-operation="replace">
+            <button class="mode-button disabled-mode" disabled="1">+/-</button>
+        </t>
+    </t>
+    <t t-extend="NumpadWidget">
+        <t t-jquery="button[class='input-button numpad-minus']" t-operation="replace">
+            <button class="mode-button disabled-mode" disabled="1">+/-</button>
+        </t>
+        <t t-jquery="button[data-mode='discount']" t-operation="replace">
+        <button class="mode-button disabled-mode" data-mode='discount' disabled="1">Desc.</button>
+        </t>
+    </t>
+    <t t-extend="ProductListWidget">
+        <t t-jquery="div[class='product-list-container']" t-operation="replace">
+            <div class='product-list-container'>
+                <div class="product-list-scroller touch-scrollable">
+                    <t t-if="widget.product_list.length != 0">
+                        <t t-js="ctx">
+                            ctx.widget.product_list.sort((a, b) => a.display_name.localeCompare(b.display_name));
+                        </t>
+                        <div class="product-list">
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="product-list-empty">
+                            <t t-if="widget.product_list.length == 0 &amp;&amp; !!widget.search_word">
+                                <p>No results found for "<b t-esc="widget.search_word"></b>".</p>
+                            </t>
+                            <t t-else="">
+                                <p>There are no products in this category.</p>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+                <span class="placeholder-ScrollbarWidget" />
+            </div>
+        </t>
+    </t>
+    <t t-extend="OrderReceipt">
+        <t t-jquery="div[class='pos-receipt-contact']" t-operation="replace">
+            <div class="pos-receipt-contact">
+                <t t-if='receipt.company.contact_address'>
+                    <div><t t-esc='receipt.company.contact_address' /></div>
+                </t>
+                <t t-if='receipt.company.phone'>
+                    <div>Tel:<t t-esc='receipt.company.phone' /></div>
+                </t>
+                <t t-if='receipt.company.vat'>
+                    <div>NIT:<t t-esc='receipt.company.vat' /></div>
+                </t>
+                <t t-if='receipt.company.email'>
+                    <div><t t-esc='receipt.company.email' /></div>
+                </t>
+                <t t-if='receipt.company.website'>
+                    <div><t t-esc='receipt.company.website' /></div>
+                </t>
+                <t t-if='receipt.header_html'>
+                    <t t-raw='receipt.header_html' />
+                </t>
+                <t t-if='!receipt.header_html and receipt.header'>
+                    <div><t t-esc='receipt.header' /></div>
+                </t>
+                <t t-if='receipt.cashier'>
+                    <div class='cashier'>
+                        <div>--------------------------------</div>
+                        <div>Served by <t t-esc='receipt.cashier' /></div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </t>
+</templates>
