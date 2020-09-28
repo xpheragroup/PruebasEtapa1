@@ -29,7 +29,7 @@ class tracking_field_overwriter(models.Model):
     property_supplier_payment_term_id = fields.Many2one(tracking=1)
     default_supplierinfo_discount = fields.Float(tracking=1)
     barcode = fields.Char(tracking=1)
-    property_account_position_id = fields.Char(tracking=1)
+    property_account_position_id = fields.Many2one(tracking=1)
     ref = fields.Char(tracking=1)
     company_id = fields.Many2one(tracking=1)
     website_id = fields.Many2one(tracking=1)
