@@ -14,3 +14,13 @@ class PurchaseOrder(models.Model):
     def print_quotation(self):
             self.write({'state': "sent"})
             return self.env.ref('purchase.report_purchase_quotation').report_action(self)
+    
+    def get_taxes(self):
+        taxes = {}
+        for line in self.order_line:
+            for tax in line.taxes_id:
+                if taxes.get(tax.name) is None:
+                    taxes[tax.name] = line.price_unit * tax.amount * line.product_qty / 100
+                else:
+                    taxes[tax.name] += line.price_unit * tax.amount * line.product_qty / 100
+        return [(k, v) for k, v in taxes.items()]
