@@ -334,7 +334,7 @@ class StockScrap(models.Model):
 
     def action_validate(self):
         self.ensure_one()
-        return do_scrap()
+        return self.do_scrap()
 
 class StockWarnInsufficientQtyScrapOver(models.TransientModel):
     _inherit = 'stock.warn.insufficient.qty.scrap'
