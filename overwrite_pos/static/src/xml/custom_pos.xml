@@ -72,4 +72,10 @@
             </div>
         </t>
     </t>
+    <t t-extend="OrderSelectorWidget">
+        <t t-jquery="span[class='order-button square neworder-button']" t-operation="replace">
+        </t>
+        <t t-jquery="span[class='order-button square deleteorder-button']" t-operation="replace">
+        </t>
+    </t>
 </templates>
