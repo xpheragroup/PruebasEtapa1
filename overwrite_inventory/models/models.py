@@ -155,6 +155,15 @@ class InventoryLine(models.Model):
         help="Productos perdidos.",
         digits='Product Unit of Measure', default=0)
 
+    prueba = fields.Image('Prueba')
+    costo = fields.Float(related='product_id.standard_price')
+    total_perdida = fields.Float(compute='_compute_lost')
+
+    @api.depends('costo', 'perdida')
+    def _compute_lost(self):
+        for line in self:
+            line.total_perdida = line.costo * line.perdida
+
     @api.onchange('perdida')
     def update_quantity_by_perdida(self):
         for line in self:

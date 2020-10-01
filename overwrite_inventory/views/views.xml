@@ -80,6 +80,9 @@
               <field name="product_uom_id" string="UdM" groups="uom.group_uom" width="0.3" force_save="1"/>
               <field name="inventory_id" invisible="1"/>
               <field name="state" invisible="1"/>
+              <field name="prueba" required="1"/>
+              <field name="costo" string="Costo unitario" required="1"/>
+              <field name="total_perdida" string="Total perdida" required="1"/>
               <field name="motivo_de_baja" string="Motivo de baja"/>
               <field name="revisado" width="0.3" required="1"/>
           </tree>
