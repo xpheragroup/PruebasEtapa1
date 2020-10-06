@@ -13,7 +13,7 @@ class PurchaseOrder(models.Model):
 
     def print_quotation(self):
             self.write({'state': "sent"})
-            return self.env.ref('purchase.report_purchase_quotation').report_action(self)
+            return self.env.ref('overwrite_purchase.report_purchase_quotation').report_action(self)
     
     def get_taxes(self):
         taxes = {}
