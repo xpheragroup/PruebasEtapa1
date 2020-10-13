@@ -353,3 +353,20 @@ class StockWarnInsufficientQtyScrapOver(models.TransientModel):
 
     def action_cancel(self):
         return self.scrap_id.to_draft()
+
+class ProductionOver(models.Model):
+    _inherit = 'mrp.production'
+
+    def action_confirm(self):
+        self._check_company()
+        for production in self:
+            if not production.move_raw_ids:
+                raise UserError(_("Add some materials to consume before marking this MO as to do."))
+            for move_raw in production.move_raw_ids:
+                move_raw.write({
+                    'unit_factor': move_raw.product_uom_qty / production.product_qty,
+                })
+            production._generate_finished_moves()
+            production.move_raw_ids._adjust_procure_method()
+            (production.move_raw_ids | production.move_finished_ids)._action_confirm()
+        return self.action_assign()
