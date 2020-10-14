@@ -403,7 +403,7 @@ class MrpBomLineOver(models.Model):
         return res
 
     @api.onchange('product_id')
-    def onchange_product_id(self):
+    def onchange_product_id_display(self):
         if self.product_id:
             self.product_uom_id_display = self.product_id.uom_id.id
 
