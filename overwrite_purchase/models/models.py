@@ -11,6 +11,8 @@ from odoo.tools.misc import formatLang, get_lang
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
+    name = fields.Char('Order Reference', required=True, index=True, copy=False, default='Nuevo')
+
     def print_quotation(self):
             self.write({'state': "sent"})
             return self.env.ref('overwrite_purchase.report_purchase_quotation').report_action(self)
