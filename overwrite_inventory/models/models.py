@@ -370,3 +370,44 @@ class ProductionOver(models.Model):
             production.move_raw_ids._adjust_procure_method()
             (production.move_raw_ids | production.move_finished_ids)._action_confirm()
         return self.action_assign()
+
+class MrpBomLineOver(models.Model):
+    _inherit = 'mrp.bom.line'
+
+    def _get_default_product_uom_id(self):
+        return self.env['uom.uom'].search([], limit=1, order='id').id
+
+    product_qty = fields.Float(
+        'Quantity', default=1.0,
+        digits='Product Unit of Measure', required=True)
+    product_uom_id = fields.Many2one(
+        'uom.uom', 'Product Unit of Measure',
+        default=_get_default_product_uom_id,
+        required=True,
+        help="Unit of Measure (Unit of Measure) is the unit of measurement for the inventory control", domain="[('category_id', '=', product_uom_category_id)]")
+    
+    product_qty_display = fields.Float('Cantidad', default=1.0, digits='Unit of Measure', required=False)
+    product_uom_id_display = fields.Many2one(
+        'uom.uom', 'Unidad de medida',
+        default=_get_default_product_uom_id, required=True,
+        help="Unit of Measure (Unit of Measure) is the unit of measurement for the inventory control", domain="[('category_id', '=', product_uom_category_id)]")
+
+    @api.onchange('product_uom_id_display')
+    def onchange_product_uom_id_display(self):
+        res = {}
+        if not self.product_uom_id_display or not self.product_id:
+            return res
+        if self.product_uom_id_display.category_id != self.product_id.uom_id.category_id:
+            self.product_uom_id_display = self.product_id.uom_id.id
+            res['warning'] = {'title': _('Warning'), 'message': _('The Product Unit of Measure you chose has a different category than in the product form.')}
+        return res
+
+    @api.onchange('product_id')
+    def onchange_product_id(self):
+        if self.product_id:
+            self.product_uom_id_display = self.product_id.uom_po_id.id
+
+    @api.onchange('product_qty_display', 'product_uom_id_display')
+    def onchange_product_qty_display(self):
+        if self.product_qty_display:
+            self.product_qty = self.product_qty_display * self.product_uom_id_display.factor_inv * self.product_id.uom_id.factor
