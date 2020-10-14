@@ -405,7 +405,7 @@ class MrpBomLineOver(models.Model):
     @api.onchange('product_id')
     def onchange_product_id(self):
         if self.product_id:
-            self.product_uom_id_display = self.product_id.uom_po_id.id
+            self.product_uom_id_display = self.product_id.uom_id.id
 
     @api.onchange('product_qty_display', 'product_uom_id_display')
     def onchange_product_qty_display(self):
