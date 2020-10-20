@@ -209,3 +209,9 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     date_order = fields.Datetime('Order Date', copy=False, help="Fecha de la orden de compra.")
+
+
+class AccountGeneralLedgerReportInherit(models.AbstractModel):
+    _inherit = "account.general.ledger"
+    
+    filter_hierarchy = True
