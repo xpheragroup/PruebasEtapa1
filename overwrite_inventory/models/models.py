@@ -369,22 +369,13 @@ class ProductionOver(models.Model):
             production._generate_finished_moves()
             production.move_raw_ids._adjust_procure_method()
             (production.move_raw_ids | production.move_finished_ids)._action_confirm()
-        return self.action_assign()
+        return True
 
 class MrpBomLineOver(models.Model):
     _inherit = 'mrp.bom.line'
 
     def _get_default_product_uom_id(self):
         return self.env['uom.uom'].search([], limit=1, order='id').id
-
-    product_qty = fields.Float(
-        'Quantity', default=1.0,
-        digits='Product Unit of Measure', required=True)
-    product_uom_id = fields.Many2one(
-        'uom.uom', 'Product Unit of Measure',
-        default=_get_default_product_uom_id,
-        required=True,
-        help="Unit of Measure (Unit of Measure) is the unit of measurement for the inventory control", domain="[('category_id', '=', product_uom_category_id)]")
     
     product_qty_display = fields.Float('Cantidad', default=1.0, digits='Unit of Measure', required=False)
     product_uom_id_display = fields.Many2one(
@@ -409,5 +400,5 @@ class MrpBomLineOver(models.Model):
 
     @api.onchange('product_qty_display', 'product_uom_id_display')
     def onchange_product_qty_display(self):
-        if self.product_qty_display:
+        if self.product_qty_display and self.product_uom_id_display:
             self.product_qty = self.product_qty_display * self.product_uom_id_display.factor_inv * self.product_id.uom_id.factor

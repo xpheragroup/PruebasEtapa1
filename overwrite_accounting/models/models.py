@@ -9,7 +9,7 @@ class AccountJournal(models.Model):
 
     # For Doris requirement
     # Size: 5 -> 10
-    code = fields.Char(string='Short Code', size=10, required=True, help="Shorter name used for display. The journal entries of this journal will also be named using this prefix by default.")
+    code = fields.Char(size=10)
 
 class AccountGeneralLedgerReport(models.AbstractModel):
     _inherit = "account.general.ledger"
