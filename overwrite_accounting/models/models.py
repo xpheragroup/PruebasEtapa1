@@ -215,3 +215,25 @@ class AccountGeneralLedgerReportInherit(models.AbstractModel):
     _inherit = "account.general.ledger"
     
     filter_hierarchy = True
+
+class AccountReport(models.AbstractModel):
+    _inherit = 'account.report'
+
+    MOST_SORT_PRIO = 0
+    LEAST_SORT_PRIO = 99
+
+    # Create codes path in the hierarchy based on account.
+    def get_account_codes(self, account):
+        # A code is tuple(sort priority, actual code)
+        codes = []
+        if account.group_id:
+            group = account.group_id
+            while group:
+                code = '%s %s' % (group.code_prefix or '', group.name)
+                codes.append((self.MOST_SORT_PRIO, code))
+                group = group.parent_id
+        else:
+            codes.append((self.MOST_SORT_PRIO, account.code[:4]))
+            codes.append((self.MOST_SORT_PRIO, account.code[:2]))
+            codes.append((self.MOST_SORT_PRIO, account.code[:1]))
+        return list(reversed(codes))
