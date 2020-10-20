@@ -2,7 +2,7 @@ import re
 from odoo import models, fields, api, _
 from odoo.tools.misc import format_date, DEFAULT_SERVER_DATE_FORMAT
 from datetime import timedelta
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
@@ -143,3 +143,9 @@ class AccountGeneralLedgerReport(models.AbstractModel):
             where_params.append(limit)
 
         return query, where_params
+
+class AccountMove(models.Model):
+    _inherit = "account.move"
+
+    date_order = fields.Datetime('Order Date', copy=False, help="Fecha de la orden de compra.")
+    
