@@ -205,3 +205,7 @@ class AccountPaymentInherit(models.Model):
                 for invoice in rec.invoice_ids:
                     invoice.x_studio_consecutivos_de_caja = rec.x_studio_consecutivo_de_caja
         return True
+class AccountMove(models.Model):
+    _inherit = "account.move"
+
+    date_order = fields.Datetime('Order Date', copy=False, help="Fecha de la orden de compra.")
