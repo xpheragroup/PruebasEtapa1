@@ -84,6 +84,8 @@
               <field name="costo" string="Costo unitario" required="1"/>
               <field name="total_perdida" string="Total perdida" required="1"/>
               <field name="motivo_de_baja" string="Motivo de baja"/>
+              <field name="disposicion_final" string="Disposición final" required="1"/>
+              <field name="fecha_disposicion_final" string="Fecha de disposición final" required="1"/>
               <field name="revisado" width="0.3" required="1"/>
           </tree>
       </field>

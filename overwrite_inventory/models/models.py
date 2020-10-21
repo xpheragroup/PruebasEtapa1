@@ -158,6 +158,8 @@ class InventoryLine(models.Model):
     prueba = fields.Image('Prueba')
     costo = fields.Float(related='product_id.standard_price')
     total_perdida = fields.Float(compute='_compute_lost')
+    disposicion_final = fields.Char()
+    fecha_disposicion_final = fields.Date()
 
     @api.depends('costo', 'perdida')
     def _compute_lost(self):
