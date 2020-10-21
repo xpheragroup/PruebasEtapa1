@@ -155,7 +155,7 @@ class InventoryLine(models.Model):
         help="Productos perdidos.",
         digits='Product Unit of Measure', default=0)
 
-    prueba = fields.Image('Prueba')
+    prueba = fields.Image('Evidencia')
     costo = fields.Float(related='product_id.standard_price')
     total_perdida = fields.Float(compute='_compute_lost')
     disposicion_final = fields.Char()
