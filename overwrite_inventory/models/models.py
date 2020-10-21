@@ -22,7 +22,7 @@ class Inventory(models.Model):
                 'type': 'ir.actions.act_window',
                 'views': [(self.env.ref('overwrite_inventory.stock_inventory_line_tree3').id, 'tree')],
                 'view_mode': 'tree',
-                'name': _('Inventory Lines'),
+                'name': _('Por conteo'),
                 'res_model': 'stock.inventory.line',
             }
         elif self.ajuste == 'baja':
@@ -30,7 +30,7 @@ class Inventory(models.Model):
                 'type': 'ir.actions.act_window',
                 'views': [(self.env.ref('overwrite_inventory.stock_inventory_line_tree5').id, 'tree')],
                 'view_mode': 'tree',
-                'name': _('Inventory Lines'),
+                'name': _('Baja de inventario'),
                 'res_model': 'stock.inventory.line',
             }
         else:
@@ -38,7 +38,7 @@ class Inventory(models.Model):
                 'type': 'ir.actions.act_window',
                 'views': [(self.env.ref('overwrite_inventory.stock_inventory_line_tree4').id, 'tree')],
                 'view_mode': 'tree',
-                'name': _('Inventory Lines'),
+                'name': _('por Diferencia'),
                 'res_model': 'stock.inventory.line',
             }
         context = {
