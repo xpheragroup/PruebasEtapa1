@@ -38,11 +38,6 @@ class MrpProduction(models.Model):
             procurement_group_vals = self._prepare_procurement_group_vals(values)
             values['procurement_group_id'] = self.env["procurement.group"].create(procurement_group_vals).id
         production = super(MrpProduction, self).create(values)
-
-        if values.get('origin', False):
-            parent = self.env['mrp.production'].search([['name', '=', values['origin']]])
-            if parent:
-                parent.children_ids = production.id
         
         production.move_raw_ids.write({
             'group_id': production.procurement_group_id.id,
