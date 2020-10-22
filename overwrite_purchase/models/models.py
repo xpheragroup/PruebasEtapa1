@@ -13,6 +13,8 @@ class PurchaseOrder(models.Model):
 
     name = fields.Char(default='Nuevo')
 
+    codigo_solicitud_cotizacion = fields.Char()
+
     def print_quotation(self):
             self.write({'state': "sent"})
             return self.env.ref('overwrite_purchase.report_purchase_quotation').report_action(self)
@@ -63,3 +65,30 @@ class PurchaseOrder(models.Model):
         result['context']['default_ref'] = self.partner_ref
         result['context']['default_date_order'] = self.date_order
         return result
+
+    @api.model
+    def create(self, vals):
+        if vals.get('name', 'New') == 'New':
+            seq_date = None
+            if 'date_order' in vals:
+                seq_date = fields.Datetime.context_timestamp(self, fields.Datetime.to_datetime(vals['date_order']))
+            vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order_sdc', sequence_date=seq_date) or '/'
+            vals['codigo_solicitud_cotizacion'] = vals['name']
+        return super(PurchaseOrder, self).create(vals)
+
+    def button_confirm(self):
+        for order in self:
+            if order.state not in ['draft', 'sent']:
+                continue
+            order._add_supplier_to_product()
+            # Deal with double validation process
+            if order.company_id.po_double_validation == 'one_step'\
+                    or (order.company_id.po_double_validation == 'two_step'\
+                        and order.amount_total < self.env.company.currency_id._convert(
+                            order.company_id.po_double_validation_amount, order.currency_id, order.company_id, order.date_order or fields.Date.today()))\
+                    or order.user_has_groups('purchase.group_purchase_manager'):
+                order.write({'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
+                order.button_approve()
+            else:
+                order.write({'state': 'to approve'})
+        return True    
