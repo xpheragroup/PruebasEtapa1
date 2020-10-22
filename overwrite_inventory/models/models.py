@@ -435,6 +435,17 @@ class MrpBomLineOver(models.Model):
         default=_get_default_product_uom_id, required=True,
         help="Unit of Measure (Unit of Measure) is the unit of measurement for the inventory control", domain="[('category_id', '=', product_uom_category_id)]")
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        for values in vals_list:
+            if 'product_id' in values and 'product_uom_id' not in values:
+                values['product_uom_id'] = self.env['product.product'].browse(values['product_id']).uom_id.id
+        mrp_bom_line = super(MrpBomLineOver, self).create(vals_list)
+        mrp_bom_line.onchange_product_uom_id_display()
+        mrp_bom_line.onchange_product_id_display()
+        mrp_bom_line.onchange_product_qty_display()
+        return mrp_bom_line
+
     @api.onchange('product_uom_id_display')
     def onchange_product_uom_id_display(self):
         res = {}
