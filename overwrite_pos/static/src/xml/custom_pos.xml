@@ -108,14 +108,11 @@
                             </span>
                         </div>
                     </t>
-                    <!--
-                    <t t-foreach='line.taxes_id' t-as='tax'>
-                        <div>
-                            <span t-esc='tax.name'/>
+                    <t t-foreach='line.taxes' t-as='tax'>
+                        <div class="pos-receipt-left-padding">
+                            <span t-esc='tax'/>
                         </div>
                     </t>
-                    -->
-
                 </t>
             </div>
         </t>

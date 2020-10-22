@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 <data>
+<template id="custom_pos" name="custom_pos" inherit_id="web.assets_backend">
+    <xpath expr="." position="inside">
+        <script type="text/javascript" src="/overwrite_pos/static/src/js/custom_pos.js"></script>
+    </xpath>
+</template>
 <template id="point_of_sale.report_saledetails">
     <t t-set="company" t-value="env.company"/>
     <t t-call="web.html_container">
