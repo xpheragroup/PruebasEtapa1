@@ -365,10 +365,10 @@ class Picking(models.Model):
     @api.model
     def create(self, vals):
         if vals.get('origin', False):
-            parent = self.env['stock.picking'].search([['name', '=', vals['origin'].split('Retorno de ')[-1]]])
+            parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split('Retorno de ')[-1]], ['company_id', '=',self.env.company.id]])
             if parent:
                 vals['parent_id'] = parent.id
-        
+        vals['company_id'] = self.company_id.id
         defaults = self.default_get(['name', 'picking_type_id'])
         picking_type = self.env['stock.picking.type'].browse(vals.get('picking_type_id', defaults.get('picking_type_id')))
         if vals.get('name', '/') == '/' and defaults.get('name', '/') == '/' and vals.get('picking_type_id', defaults.get('picking_type_id')):
@@ -405,6 +405,8 @@ class Picking(models.Model):
                 picking.message_subscribe([vals.get('partner_id')])
 
         return res
+
+
 
 class ProductionOver(models.Model):
     _inherit = 'mrp.production'
