@@ -451,20 +451,23 @@ class MrpBomLineOver(models.Model):
 
     @api.onchange('product_uom_id_display')
     def onchange_product_uom_id_display(self):
-        res = {}
-        if not self.product_uom_id_display or not self.product_id:
-            return res
-        if self.product_uom_id_display.category_id != self.product_id.uom_id.category_id:
-            self.product_uom_id_display = self.product_id.uom_id.id
-            res['warning'] = {'title': _('Warning'), 'message': _('The Product Unit of Measure you chose has a different category than in the product form.')}
+        for mbl in self:
+            res = {}
+            if not mbl.product_uom_id_display or not mbl.product_id:
+                return res
+            if mbl.product_uom_id_display.category_id != mbl.product_id.uom_id.category_id:
+                mbl.product_uom_id_display = self.product_id.uom_id.id
+                res['warning'] = {'title': _('Warning'), 'message': _('The Product Unit of Measure you chose has a different category than in the product form.')}
         return res
 
     @api.onchange('product_id')
     def onchange_product_id_display(self):
-        if self.product_id:
-            self.product_uom_id_display = self.product_id.uom_id.id
+        for mbl in self:
+            if mbl.product_id:
+                mbl.product_uom_id_display = mbl.product_id.uom_id.id
 
     @api.onchange('product_qty_display', 'product_uom_id_display')
     def onchange_product_qty_display(self):
-        if self.product_qty_display and self.product_uom_id_display:
-            self.product_qty = self.product_qty_display * self.product_uom_id_display.factor_inv * self.product_id.uom_id.factor
+        for mbl in self:
+            if mbl.product_qty_display and mbl.product_uom_id_display:
+                mbl.product_qty = mbl.product_qty_display * mbl.product_uom_id_display.factor_inv * mbl.product_id.uom_id.factor
