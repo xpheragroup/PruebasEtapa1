@@ -2,7 +2,17 @@ import re
 from odoo import models, fields, api, _
 from odoo.tools.misc import format_date, DEFAULT_SERVER_DATE_FORMAT
 from datetime import timedelta
+from collections import defaultdict
 from odoo.exceptions import ValidationError, UserError
+
+MAP_INVOICE_TYPE_PARTNER_TYPE = {
+    'out_invoice': 'customer',
+    'out_refund': 'customer',
+    'out_receipt': 'customer',
+    'in_invoice': 'supplier',
+    'in_refund': 'supplier',
+    'in_receipt': 'supplier',
+}
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
@@ -237,3 +247,31 @@ class AccountReport(models.AbstractModel):
             codes.append((self.MOST_SORT_PRIO, account.code[:2]))
             codes.append((self.MOST_SORT_PRIO, account.code[:1]))
         return list(reversed(codes))
+class PaymentRegister(models.TransientModel):
+    _inherit= 'account.payment.register'
+    consecutivo_de_caja = fields.Char( string='Consecutivo de caja')
+    def _prepare_payment_vals(self, invoices):
+        '''Create the payment values.
+
+        :param invoices: The invoices/bills to pay. In case of multiple
+            documents, they need to be grouped by partner, bank, journal and
+            currency.
+        :return: The payment values as a dictionary.
+        '''
+        amount = self.env['account.payment']._compute_payment_amount(invoices, invoices[0].currency_id, self.journal_id, self.payment_date)
+        values = {
+            'journal_id': self.journal_id.id,
+            'payment_method_id': self.payment_method_id.id,
+            'payment_date': self.payment_date,
+            'communication': self._prepare_communication(invoices),
+            'invoice_ids': [(6, 0, invoices.ids)],
+            'payment_type': ('inbound' if amount > 0 else 'outbound'),
+            'amount': abs(amount),
+            'currency_id': invoices[0].currency_id.id,
+            'partner_id': invoices[0].commercial_partner_id.id,
+            'partner_type': MAP_INVOICE_TYPE_PARTNER_TYPE[invoices[0].type],
+            'partner_bank_account_id': invoices[0].invoice_partner_bank_id.id,
+            'x_studio_consecutivo_de_caja': self.consecutivo_de_caja,
+        }
+        return values
+   
