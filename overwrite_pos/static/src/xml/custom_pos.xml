@@ -117,14 +117,19 @@
             </div>
         </t>
         <t t-jquery="div[class='pos-receipt-order-data']" t-operation="replace">
+            <t t-js='ctx'>console.log(ctx)</t>
             <div class="pos-receipt-order-data">
-            <div><t t-esc='date' /></div>
-            <div>NO SOMOS GRANDES CONTRIBUYENTES</div>
-            <div>Según Resolución No 000000 del 00 Ene. 2026</div>
-            <div>NO SOMOS REETENEDORES DE IVA</div>
-            <div>Actividad Economica 5611</div>
-            <div>Agentes Retenedor de ICA</div>
-            <div>No autorretenedor</div>
+                <div>NO SOMOS GRANDES CONTRIBUYENTES</div>
+                <div>Según Resolución No 000000 del 00 Ene. 2026</div>
+                <div>NO SOMOS REETENEDORES DE IVA</div>
+                <div>Actividad Economica 5611</div>
+                <div>Agentes Retenedor de ICA</div>
+                <div>No autorretenedor</div>
+                <div><t t-esc='receipt.name' /></div>
+                <div><t t-esc='receipt.date.localestring' /></div>
+                <t t-if="receipt.l10n_co_dian !== false">
+                    <div style="word-wrap:break-word;"><t t-esc="receipt.l10n_co_dian"/></div>
+                </t>
             </div>
         </t>
     </t>
