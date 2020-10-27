@@ -24,6 +24,8 @@ class AccountJournal(models.Model):
 class AccountGeneralLedgerReport(models.AbstractModel):
     _inherit = "account.general.ledger"
 
+    filter_hierarchy = True
+
     @api.model
     def _get_columns_name(self, options):
         return [
@@ -221,11 +223,6 @@ class AccountMove(models.Model):
     date_order = fields.Datetime('Order Date', copy=False, help="Fecha de la orden de compra.")
 
 
-class AccountGeneralLedgerReportInherit(models.AbstractModel):
-    _inherit = "account.general.ledger"
-    
-    filter_hierarchy = True
-
 class AccountReport(models.AbstractModel):
     _inherit = 'account.report'
 
@@ -247,6 +244,18 @@ class AccountReport(models.AbstractModel):
             codes.append((self.MOST_SORT_PRIO, account.code[:2]))
             codes.append((self.MOST_SORT_PRIO, account.code[:1]))
         return list(reversed(codes))
+
+    def _init_filter_multi_company(self, options, previous_options=None):
+        if not self.filter_multi_company:
+            return
+
+        companies = self.env.user.company_ids
+        if len(companies) > 1:
+            allowed_company_ids = self._context.get('allowed_company_ids', self.env.company.ids)
+            options['multi_company'] = [
+                {'id': c.id, 'name': c.name, 'selected': c.id in allowed_company_ids, 'vat': c.vat} for c in companies
+            ]
+
 class PaymentRegister(models.TransientModel):
     _inherit= 'account.payment.register'
     consecutivo_de_caja = fields.Char( string='Consecutivo de caja')
