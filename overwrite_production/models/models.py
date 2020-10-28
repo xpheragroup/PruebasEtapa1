@@ -49,20 +49,10 @@ class MrpProduction(models.Model):
     children_ids = fields.One2many(comodel_name='mrp.production', inverse_name='parent_id')
 
     def action_print_bom(self):
-        context = dict(self.env.context)
         data = dict(quantity=self.product_qty, docids=[self.bom_id.id], no_price=True, report_type='bom_structure')
-        report_action = {
-            'context': context,
-            'data': data,
-            'type': 'ir.actions.report',
-            'report_name': 'mrp.report_bom_structure',
-            'report_type': "qweb-pdf",
-            'report_file': 'Estructura Lista de Materiales',
-            'name': self.product_id.name,
-        }
-
-        return report_action
-
+        report = self.env.ref('mrp.action_report_bom_structure').with_context(discard_logo_check=True)
+        report.name = 'Estructura de materiales - {}'.format(self.name)
+        return report.report_action(self.bom_id, data)
     @api.model
     def create(self, values):
         if values.get('origin', False):
