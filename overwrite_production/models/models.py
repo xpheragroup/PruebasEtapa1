@@ -6,6 +6,39 @@ from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, UserError
 from odoo.tools import date_utils, float_compare, float_round, float_is_zero
 
+class ReportBomStructure(models.AbstractModel):
+    _inherit = 'report.mrp.report_bom_structure'
+
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        docs = []
+        if docids is None and data.get('docids', False):
+            docids = data.get('docids', False)
+        for bom_id in docids:
+            bom = self.env['mrp.bom'].browse(bom_id)
+            candidates = bom.product_id or bom.product_tmpl_id.product_variant_ids
+            quantity = float(data.get('quantity', 1))
+            for product_variant_id in candidates:
+                if data and data.get('childs'):
+                    doc = self._get_pdf_line(bom_id, product_id=product_variant_id, qty=quantity, child_bom_ids=json.loads(data.get('childs')))
+                else:
+                    doc = self._get_pdf_line(bom_id, product_id=product_variant_id, qty=quantity, unfolded=True)
+                doc['report_type'] = 'pdf'
+                doc['report_structure'] = data and data.get('report_type') or 'all'
+                docs.append(doc)
+            if not candidates:
+                if data and data.get('childs'):
+                    doc = self._get_pdf_line(bom_id, qty=quantity, child_bom_ids=json.loads(data.get('childs')))
+                else:
+                    doc = self._get_pdf_line(bom_id, qty=quantity, unfolded=True)
+                doc['report_type'] = 'pdf'
+                doc['report_structure'] = data and data.get('report_type') or 'all'
+                docs.append(doc)
+        return {
+            'doc_ids': docids,
+            'doc_model': 'mrp.bom',
+            'docs': docs,
+        }
 
 class MrpProduction(models.Model):
     """ Manufacturing Orders """
@@ -13,6 +46,21 @@ class MrpProduction(models.Model):
 
     parent_id = fields.Many2one(comodel_name='mrp.production')
     children_ids = fields.One2many(comodel_name='mrp.production', inverse_name='parent_id')
+
+    def action_print_bom(self):
+        context = dict(self.env.context)
+        data = dict(quantity=self.product_qty, docids=[self.bom_id.id])
+        report_action = {
+            'context': context,
+            'data': data,
+            'type': 'ir.actions.report',
+            'report_name': 'mrp.report_bom_structure',
+            'report_type': "qweb-pdf",
+            'report_file': 'Estructura Lista de Materiales',
+            'name': self.product_id.name,
+        }
+
+        return report_action
 
     @api.model
     def create(self, values):
