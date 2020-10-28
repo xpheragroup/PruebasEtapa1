@@ -53,6 +53,7 @@ class MrpProduction(models.Model):
         report = self.env.ref('mrp.action_report_bom_structure').with_context(discard_logo_check=True)
         report.name = 'Estructura de materiales - {}'.format(self.name)
         return report.report_action(self.bom_id, data)
+        
     @api.model
     def create(self, values):
         if values.get('origin', False):
