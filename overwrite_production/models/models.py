@@ -1,3 +1,4 @@
+import json
 import datetime
 from collections import defaultdict
 from itertools import groupby
@@ -13,7 +14,7 @@ class ReportBomStructure(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         docs = []
         if docids is None and data.get('docids', False):
-            docids = data.get('docids', False)
+            docids = data.get('docids')
         for bom_id in docids:
             bom = self.env['mrp.bom'].browse(bom_id)
             candidates = bom.product_id or bom.product_tmpl_id.product_variant_ids
@@ -49,7 +50,7 @@ class MrpProduction(models.Model):
 
     def action_print_bom(self):
         context = dict(self.env.context)
-        data = dict(quantity=self.product_qty, docids=[self.bom_id.id])
+        data = dict(quantity=self.product_qty, docids=[self.bom_id.id], no_price=True, report_type='bom_structure')
         report_action = {
             'context': context,
             'data': data,
