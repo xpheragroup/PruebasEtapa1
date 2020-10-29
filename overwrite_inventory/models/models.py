@@ -87,6 +87,15 @@ class Inventory(models.Model):
         if self.product_ids:
             domain += ' AND sq.product_id in %s'
             args += (tuple(self.product_ids.ids),)
+            for product in self.product_ids:
+                stock_quants = self.env['stock.quant'].search(['&', ['product_id', '=', product.id], ['location_id', 'in', locations.ids]])
+                if len(stock_quants) < 1 and product.x_studio_perecedero:
+                    for location in locations.ids:
+                        self.env['stock.quant'].create({
+                            'product_id': product.id,
+                            'location_id': location,
+                            'company_id': self.company_id.id
+                        })
 
         self.env['stock.quant'].flush(['company_id', 'product_id', 'quantity', 'location_id', 'lot_id', 'package_id', 'owner_id'])
         self.env['product.product'].flush(['active'])
