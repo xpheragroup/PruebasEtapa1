@@ -40,6 +40,9 @@
         </t>
     </t>
     <t t-extend="OrderReceipt">
+        <t t-jquery="div[class='pos-receipt']" t-operation="attributes">
+            <attribute name="style">width:320px;</attribute>
+        </t>
         <t t-jquery="div[class='pos-receipt-contact']" t-operation="replace">
             <div class="pos-receipt-contact">
                 <t t-if='receipt.company.contact_address'>
@@ -136,6 +139,9 @@
         <t t-jquery="div[class='pos-receipt-order-data']" t-operation="replace">
             <t t-js='ctx'>console.log(ctx)</t>
             <div class="pos-receipt-order-data">
+                <div style="transform: rotate(-90deg); position: relative; right: -14.1em; top: -12em;">
+                    Xphera Group S.A.S. 901.008.416-5 Odoo P.O.S.
+                </div>
                 <div>No nomos grandes contribuyentes</div>
                 <div>Responsables de IVA</div>
                 <div>Actividad Económica 5611</div>
