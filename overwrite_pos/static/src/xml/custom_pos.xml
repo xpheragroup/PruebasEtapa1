@@ -65,8 +65,8 @@
                     <div>Rango autorizado del No <t t-esc="receipt.range0"/> hasta la <t t-esc="receipt.range1"/></div>
                     <t t-raw='receipt.header_html' />
                 </t>
-                <t t-if="receipt.l10n_co_dian !== false and receipt.fact_code">
-                    <div style="word-wrap:break-word;"><t t-esc="receipt.fact_code"/><t t-esc="receipt.l10n_co_dian"/></div>
+                <t t-if="receipt.l10n_co_dian !== false and receipt.fact_code and receipt.l10n_co_dian !== undefined">
+                    <div style="word-wrap:break-word;"><t t-esc="receipt.fact_code"/><t t-esc="receipt.l10n_co_dian.split('/')[1]"/></div>
                 </t>
                 <t t-if='receipt.header_html'>
                     <t t-raw='receipt.header_html' />
@@ -142,8 +142,8 @@
                 <div>Somos agentes retenedor de ICA</div>
                 <div>No autorretenedor</div>
                 <div><t t-esc='receipt.date.localestring' /></div>
-                <t t-if="receipt.l10n_co_dian !== false">
-                    <div style="word-wrap:break-word;"><t t-esc="receipt.l10n_co_dian"/></div>
+                <t t-if="receipt.l10n_co_dian !== false and receipt.l10n_co_dian !== undefined">
+                    <div style="word-wrap:break-word;"><t t-esc="receipt.l10n_co_dian.split('/')[0]"/></div>
                 </t>
             </div>
         </t>
