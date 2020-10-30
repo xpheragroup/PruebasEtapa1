@@ -95,5 +95,26 @@
     </t>
     </t>
 </template>
+<record id="pos_config_view_form" model="ir.ui.view">
+        <field name="name">pos.config.form.view.inherit.overwrite_pos</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='company']" position="after">
+                <div id="overwrite_pos" class="col-12 col-lg-6 o_setting_box" groups="base.group_multi_company">
+                    <div class="o_setting_right_pane">
+                       <label for="numeracion_facturacion"/>
+                        <div><field name="numeracion_facturacion"/></div>
+                        <label for="range0"/>
+                        <div><field name="range0"/></div>
+                        <label for="range1"/>
+                        <div><field name="range1"/></div>
+                        <label for="fact_code"/>
+                        <div><field name="fact_code"/></div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
 </data>
 </openerp>

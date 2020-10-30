@@ -49,13 +49,24 @@
                     <div>Tel:<t t-esc='receipt.company.phone' /></div>
                 </t>
                 <t t-if='receipt.company.vat'>
-                    <div>NIT:<t t-esc='receipt.company.vat' /></div>
+                    <div>NIT <t t-esc='receipt.company.vat' /></div>
                 </t>
                 <t t-if='receipt.company.email'>
                     <div><t t-esc='receipt.company.email' /></div>
                 </t>
                 <t t-if='receipt.company.website'>
                     <div><t t-esc='receipt.company.website' /></div>
+                </t>
+                <t t-if='receipt.numeracion_facturacion'>
+                    <div>Sistemas P.O.S.</div>
+                    <div>Autorización numeración facturación <t t-esc="receipt.numeracion_facturacion"/></div>
+                </t>
+                <t t-if='receipt.range0 and receipt.range1'>
+                    <div>Rango autorizado del No <t t-esc="receipt.range0"/> hasta la <t t-esc="receipt.range1"/></div>
+                    <t t-raw='receipt.header_html' />
+                </t>
+                <t t-if="receipt.l10n_co_dian !== false and receipt.fact_code">
+                    <div style="word-wrap:break-word;"><t t-esc="receipt.fact_code"/><t t-esc="receipt.l10n_co_dian"/></div>
                 </t>
                 <t t-if='receipt.header_html'>
                     <t t-raw='receipt.header_html' />
@@ -65,8 +76,6 @@
                 </t>
                 <t t-if='receipt.cashier'>
                     <div class='cashier'>
-                        <div>Factura de venta</div>
-                        <div>--------------------------------</div>
                         <div>Served by <t t-esc='receipt.cashier' /></div>
                     </div>
                 </t>
@@ -76,12 +85,20 @@
             <div class='orderlines'>
                 <t t-foreach='receipt.orderlines' t-as='line'>
                     <t t-set='simple' t-value='(line.discount === 0 and line.unit_name === "Units" and line.quantity === 1 and !discount_to_show and !(line.display_discount_policy == "without_discount" &amp;&amp; line.price != line.price_lst))' />
+                     
                     <t t-if='simple'>
                         <div>
-                            <t t-esc='line.product_name_wrapped[0]' /><span t-esc='widget.format_currency_no_symbol(line.price_display)' class="price_display pos-receipt-right-align"/></div><t t-call="OrderReceiptWrappedProductNameLines"/>
+                            [<t t-esc='line.product_code' />] <t t-esc='line.product_name_wrapped[0]' /><span t-esc='widget.format_currency_no_symbol(line.price_display)' class="price_display pos-receipt-right-align"/></div><t t-call="OrderReceiptWrappedProductNameLines"/>
                         </t>
                     <t t-if='!simple'>
-                        <div t-esc='line.product_name_wrapped[0]'/><t t-call="OrderReceiptWrappedProductNameLines"/><t t-if="line.display_discount_policy == 'without_discount' &amp;&amp; line.price != line.price_lst"><div class="pos-receipt-left-padding"><t t-esc="widget.format_currency_no_symbol(line.price_lst)" />-><t t-esc="widget.format_currency_no_symbol(line.price)" /></div>
+                        <div>
+                            [<t t-esc='line.product_code' />] <t t-esc='line.product_name_wrapped[0]'/>
+                        </div>
+                        <t t-call="OrderReceiptWrappedProductNameLines"/>
+                        <t t-if="line.display_discount_policy == 'without_discount' &amp;&amp; line.price != line.price_lst">
+                            <div class="pos-receipt-left-padding">
+                                <t t-esc="widget.format_currency_no_symbol(line.price_lst)" />-><t t-esc="widget.format_currency_no_symbol(line.price)" />
+                            </div>
                         </t>
                         <t t-elif='line.discount !== 0'>
                             <div class="pos-receipt-left-padding">
@@ -119,13 +136,11 @@
         <t t-jquery="div[class='pos-receipt-order-data']" t-operation="replace">
             <t t-js='ctx'>console.log(ctx)</t>
             <div class="pos-receipt-order-data">
-                <div>NO SOMOS GRANDES CONTRIBUYENTES</div>
-                <div>Según Resolución No 000000 del 00 Ene. 2026</div>
-                <div>NO SOMOS REETENEDORES DE IVA</div>
-                <div>Actividad Economica 5611</div>
-                <div>Agentes Retenedor de ICA</div>
+                <div>No nomos grandes contribuyentes</div>
+                <div>Responsables de IVA</div>
+                <div>Actividad Económica 5611</div>
+                <div>Somos agentes retenedor de ICA</div>
                 <div>No autorretenedor</div>
-                <div><t t-esc='receipt.name' /></div>
                 <div><t t-esc='receipt.date.localestring' /></div>
                 <t t-if="receipt.l10n_co_dian !== false">
                     <div style="word-wrap:break-word;"><t t-esc="receipt.l10n_co_dian"/></div>
