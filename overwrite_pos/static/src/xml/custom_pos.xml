@@ -144,7 +144,7 @@
                 </div>
                 <div>No nomos grandes contribuyentes</div>
                 <div>Responsables de IVA</div>
-                <div>Actividad Económica 5611</div>
+                <div>Actividad Económica 5629</div>
                 <div>Somos agentes retenedor de ICA</div>
                 <div>No autorretenedor</div>
                 <div><t t-esc='receipt.date.localestring' /></div>
