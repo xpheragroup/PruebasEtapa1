@@ -91,7 +91,8 @@ class PurchaseOrder(models.Model):
                         and order.amount_total < self.env.company.currency_id._convert(
                             order.company_id.po_double_validation_amount, order.currency_id, order.company_id, order.date_order or fields.Date.today()))\
                     or order.user_has_groups('purchase.group_purchase_manager'):
-                order.write({'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
+                if not vals.get('is_gift', False):
+                    order.write({'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
                 order.button_approve()
             else:
                 order.write({'state': 'to approve'})
