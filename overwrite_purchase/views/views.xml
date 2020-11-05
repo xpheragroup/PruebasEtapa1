@@ -9,25 +9,6 @@
             file="purchase.report_purchasequotation"
             print_report_name="'Solicitud de Cotización - %s' % (object.name)"
         />
-        <record id="gift_order_action" model="ir.actions.act_window">            
-            <field name="name">Orden de obsequio</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">purchase.order</field>
-            <field name="domain">
-                [('is_gift','=', True)]
-            </field>
-            <field name="context">
-                {'default_is_gift': True}
-            </field>
-            <field name="view_ids" eval="[(5, 0, 0), 
-                (0, 0, {'view_mode': 'tree', 'view_id': ref('gift_order_tree')}), 
-                (0, 0, {'view_mode': 'form', 'view_id': ref('gift_order_form')})]"/>
-            <field name="help" type="html">              
-                <p class="oe_view_nocontent_create">                
-                    Click para crear un nuevo obsequio.
-                </p>
-            </field>
-        </record>
         <record id="gift_order_tree" model="ir.ui.view">
             <field name="name">purchase.order.gift_tree</field>
             <field name="model">purchase.order</field>
@@ -54,7 +35,7 @@
                 </tree>
             </field>
         </record>
-         <record id="gift_order_form" model="ir.ui.view">
+        <record id="gift_order_form" model="ir.ui.view">
             <field name="name">purchase.order.gift_form</field>
             <field name="model">purchase.order</field>
             <field name="arch" type="xml">
@@ -273,6 +254,25 @@
                         </notebook>
                     </sheet>
                 </form>
+            </field>
+        </record>
+        <record id="gift_order_action" model="ir.actions.act_window">            
+            <field name="name">Orden de obsequio</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">purchase.order</field>
+            <field name="domain">
+                [('is_gift','=', True)]
+            </field>
+            <field name="context">
+                {'default_is_gift': True}
+            </field>
+            <field name="view_ids" eval="[(5, 0, 0), 
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('gift_order_tree')}), 
+                (0, 0, {'view_mode': 'form', 'view_id': ref('gift_order_form')})]"/>
+            <field name="help" type="html">              
+                <p class="oe_view_nocontent_create">                
+                    Click para crear un nuevo obsequio.
+                </p>
             </field>
         </record>
     </data>
