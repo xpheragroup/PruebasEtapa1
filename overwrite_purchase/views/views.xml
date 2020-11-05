@@ -42,8 +42,8 @@
                 <form string="Purchase Order" class="o_purchase_order">
                     <header>
                         <button name="button_confirm" type="object" states="draft" id="draft_confirm" string="Confirmar obsequio"/>
-                        <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
-                        <button name="button_cancel" states="draft,to approve,sent,purchase" string="Cancel" type="object" />
+                        <button name="button_draft" states="cancel" string="A borrador" type="object" />
+                        <button name="button_cancel" states="draft,to approve,sent,purchase" string="Cancelar" type="object" />
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
