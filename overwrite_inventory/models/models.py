@@ -534,7 +534,6 @@ class MrpBomLineOver(models.Model):
                 values['product_uom_id'] = self.env['product.product'].browse(values['product_id']).uom_id.id
         mrp_bom_line = super(MrpBomLineOver, self).create(vals_list)
         mrp_bom_line.onchange_product_uom_id_display()
-        mrp_bom_line.onchange_product_id_display()
         mrp_bom_line.onchange_product_qty_display()
         return mrp_bom_line
 
