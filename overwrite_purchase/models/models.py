@@ -69,7 +69,7 @@ class PurchaseOrder(models.Model):
 
     @api.model
     def create(self, vals):
-        if vals.get('name', 'New') == 'New':
+        if vals.get('name', 'New') == 'New' or  vals.get('name', 'Nuevo') == 'Nuevo':
             seq_date = None
             if 'date_order' in vals:
                     seq_date = fields.Datetime.context_timestamp(self, fields.Datetime.to_datetime(vals['date_order']))
