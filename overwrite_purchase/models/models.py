@@ -12,6 +12,7 @@ class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
     name = fields.Char(default='Nuevo')
+    is_gift = fields.Boolean('Es regalo')
 
     codigo_solicitud_cotizacion = fields.Char()
 
@@ -71,8 +72,11 @@ class PurchaseOrder(models.Model):
         if vals.get('name', 'New') == 'New':
             seq_date = None
             if 'date_order' in vals:
-                seq_date = fields.Datetime.context_timestamp(self, fields.Datetime.to_datetime(vals['date_order']))
-            vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order_sdc', sequence_date=seq_date) or '/'
+                    seq_date = fields.Datetime.context_timestamp(self, fields.Datetime.to_datetime(vals['date_order']))
+            if not vals.get('is_gift', False):
+                vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order_sdc', sequence_date=seq_date) or '/'
+            else:
+                vals['name'] = self.env['ir.sequence'].next_by_code('purchase.gift', sequence_date=seq_date) or '/'
             vals['codigo_solicitud_cotizacion'] = vals['name']
         return super(PurchaseOrder, self).create(vals)
 
