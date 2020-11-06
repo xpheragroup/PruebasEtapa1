@@ -250,6 +250,10 @@ class StockScrap(models.Model):
     location_id = fields.Many2one(states=rule, tracking=1)
     scrap_location_id = fields.Many2one(states=rule, tracking=1)
     scrap_qty = fields.Float(states=rule, tracking=1)
+    
+    user_rev = fields.Many2one('res.users', string='Revisó', required=False)
+    user_aut = fields.Many2one('res.users', string='Autorizó', required=False)
+    user_apr = fields.Many2one('res.users', string='Aprobó', required=False)
 
     motivo_de_baja = fields.Selection([
         ('obs', 'Obsolecencia de Bien'),
@@ -300,18 +304,23 @@ class StockScrap(models.Model):
         self._check_company()
         for scrap in self:
             scrap.write({'state': 'auth'})
+            scrap.write({'user_rev': self.env.uid})
         return True
     
     def to_approv(self):
         self._check_company()
         for scrap in self:
             scrap.write({'state': 'approv'})
+            scrap.write({'user_aut': self.env.uid})
         return True
     
     def to_draft(self):
         self._check_company()
         for scrap in self:
             scrap.write({'state': 'draft'})
+            scrap.write({'user_rev': False})
+            scrap.write({'user_aut': False})
+            scrap.write({'user_apr': False})
         return True
 
     def do_scrap(self):
@@ -321,6 +330,7 @@ class StockScrap(models.Model):
             # master: replace context by cancel_backorder
             move.with_context(is_scrap=True)._action_done()
             scrap.write({'move_id': move.id, 'state': 'done'})
+            scrap.write({'user_apr': self.env.uid})
         return True
     
 
