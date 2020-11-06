@@ -559,3 +559,8 @@ class MrpBomLineOver(models.Model):
         for mbl in self:
             if mbl.product_qty_display and mbl.product_uom_id_display:
                 mbl.product_qty = mbl.product_qty_display * mbl.product_uom_id_display.factor_inv * mbl.product_id.uom_id.factor
+
+class Warehouse(models.Model):
+    _inherit = "stock.warehouse"
+
+    code = fields.Char(size=10)
