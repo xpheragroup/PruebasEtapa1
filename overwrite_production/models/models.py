@@ -49,8 +49,11 @@ class MrpProduction(models.Model):
     children_ids = fields.One2many(comodel_name='mrp.production', inverse_name='parent_id')
 
     user_rev = fields.Many2one('res.users', string='Revisó', required=False)
+    date_rev = fields.Datetime(string='Fecha revisó')
     user_apr = fields.Many2one('res.users', string='Aprobó', required=False)
+    date_apr = fields.Datetime(string='Fecha aprobó')
     user_ter = fields.Many2one('res.users', string='Terminó', required=False)
+    date_ter = fields.Datetime(string='Fecha terminó')
 
     state = fields.Selection([
         ('draft', 'Elaboración'),
@@ -76,6 +79,8 @@ class MrpProduction(models.Model):
             mrp.write({'state': 'draft'})
             mrp.write({'user_rev': False})
             mrp.write({'user_apr': False})
+            mrp.write({'date_rev': False})
+            mrp.write({'date_apr': False})
         return True
     
     def to_review(self):
@@ -89,6 +94,7 @@ class MrpProduction(models.Model):
         for mrp in self:
             mrp.write({'state': 'approv'})
             mrp.write({'user_rev': self.env.uid})
+            mrp.write({'date_rev': datetime.datetime.now()})
         return True
     
     def action_confirm(self):
@@ -105,6 +111,7 @@ class MrpProduction(models.Model):
             (production.move_raw_ids | production.move_finished_ids)._action_confirm()
         for mrp in self:
             mrp.write({'user_apr': self.env.uid})
+            mrp.write({'date_apr': datetime.datetime.now()})
         return True
 
     def action_print_bom(self):
@@ -202,4 +209,5 @@ class MrpProductProduce(models.TransientModel):
         self._check_company()
         for mrp in self.production_id:
             mrp.write({'user_ter': self.env.uid})
+            mrp.write({'date_ter': datetime.datetime.now()})
         return {'type': 'ir.actions.act_window_close'}
