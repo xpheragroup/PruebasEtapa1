@@ -50,6 +50,7 @@ class MrpProduction(models.Model):
 
     user_rev = fields.Many2one('res.users', string='Revisó', required=False)
     user_apr = fields.Many2one('res.users', string='Aprobó', required=False)
+    user_ter = fields.Many2one('res.users', string='Terminó', required=False)
 
     state = fields.Selection([
         ('draft', 'Elaboración'),
@@ -182,3 +183,15 @@ class MrpBomLineOver(models.Model):
         for mbl in self:
             if mbl.product_qty_display and mbl.product_uom_id_display:
                 mbl.product_qty = mbl.product_qty_display * mbl.product_uom_id_display.factor_inv * mbl.product_id.uom_id.factor
+
+class MrpProductProduce(models.TransientModel):
+    _inherit = "mrp.product.produce"
+
+    def do_produce(self):
+        """ Save the current wizard and go back to the MO. """
+        self.ensure_one()
+        self._record_production()
+        self._check_company()
+        for mrp in self.production_id:
+            mrp.write({'user_ter': self.env.uid})
+        return {'type': 'ir.actions.act_window_close'}
