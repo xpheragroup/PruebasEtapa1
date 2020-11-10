@@ -70,6 +70,14 @@ class MrpProduction(models.Model):
              " * Done: The MO is closed, the stock moves are posted. \n"
              " * Cancelled: The MO has been cancelled, can't be confirmed anymore.")
 
+    def to_draft(self):
+        self._check_company()
+        for mrp in self:
+            mrp.write({'state': 'draft'})
+            mrp.write({'user_rev': False})
+            mrp.write({'user_apr': False})
+        return True
+    
     def to_review(self):
         self._check_company()
         for mrp in self:

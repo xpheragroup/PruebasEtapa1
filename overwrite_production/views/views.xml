@@ -12,6 +12,7 @@
                     <button name="to_approv" attrs="{'invisible': ['|', ('state', '!=', 'review'), ('is_locked', '=', False)]}" string="A aprobación" type="object" class="oe_highlight"/>
                     <button name="action_confirm" attrs="{'invisible': ['|', ('state', '!=', 'approv'), ('is_locked', '=', False)]}" string="Mark as Todo" type="object" class="oe_highlight"/>
                     <button name="action_assign" attrs="{'invisible': ['|', '|', ('is_locked', '=', False), ('state', 'in', ('draft', 'review', 'approv', 'done', 'cancel')), ('reservation_state', '=', 'assigned')]}" string="Check availability" type="object" class="oe_highlight"/>
+                    <button name="to_draft" attrs="{'invisible': ['|', ('state', 'not in', ['review', 'approv']), ('is_locked', '=', False)]}" string="A borrador" type="object"/>
                     <button name="button_plan" attrs="{'invisible': ['|', ('state', '!=', 'confirmed'), ('routing_id', '=', False)]}" type="object" string="Plan" class="oe_highlight"/>
                     <button name="button_unplan" type="object" string="Unplan" attrs="{'invisible': ['|', '|', ('state', '!=', 'planned'), ('date_planned_start', '=', False), ('date_planned_finished', '=', False)]}"/>
                     <button name="open_produce_product" attrs="{'invisible': ['|', '|', '|', ('state', '=', 'to_close'), ('is_locked', '=', False), ('reservation_state', '!=', 'assigned'), ('routing_id', '!=', False)]}" string="Produce" type="object" class="oe_highlight"/>
