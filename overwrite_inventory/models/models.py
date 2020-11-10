@@ -1,3 +1,5 @@
+import datetime
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
@@ -255,6 +257,10 @@ class StockScrap(models.Model):
     user_aut = fields.Many2one('res.users', string='Autorizó', required=False)
     user_apr = fields.Many2one('res.users', string='Aprobó', required=False)
 
+    date_rev = fields.Datetime(string='Fecha revisó')
+    date_aut = fields.Datetime(string='Fecha autorizó')
+    date_apr = fields.Datetime(string='Fecha aprobó')
+
     motivo_de_baja = fields.Selection([
         ('obs', 'Obsolecencia de Bien'),
         ('da', 'Daño'),
@@ -305,6 +311,7 @@ class StockScrap(models.Model):
         for scrap in self:
             scrap.write({'state': 'auth'})
             scrap.write({'user_rev': self.env.uid})
+            scrap.write({'date_rev': datetime.datetime.today()})
         return True
     
     def to_approv(self):
@@ -312,6 +319,7 @@ class StockScrap(models.Model):
         for scrap in self:
             scrap.write({'state': 'approv'})
             scrap.write({'user_aut': self.env.uid})
+            scrap.write({'date_aut': datetime.datetime.today()})
         return True
     
     def to_draft(self):
@@ -321,6 +329,9 @@ class StockScrap(models.Model):
             scrap.write({'user_rev': False})
             scrap.write({'user_aut': False})
             scrap.write({'user_apr': False})
+            scrap.write({'date_rev': False})
+            scrap.write({'date_aut': False})
+            scrap.write({'date_apr': False})
         return True
 
     def do_scrap(self):
@@ -331,6 +342,7 @@ class StockScrap(models.Model):
             move.with_context(is_scrap=True)._action_done()
             scrap.write({'move_id': move.id, 'state': 'done'})
             scrap.write({'user_apr': self.env.uid})
+            scrap.write({'date_apr': datetime.datetime.today()})
         return True
     
 
