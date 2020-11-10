@@ -72,7 +72,7 @@ class PurchaseOrder(models.Model):
         if vals.get('name', 'New') == 'New' or  vals.get('name', 'Nuevo') == 'Nuevo':
             seq_date = None
             if 'date_order' in vals:
-                    seq_date = fields.Datetime.context_timestamp(self, fields.Datetime.to_datetime(vals['date_order']))
+                seq_date = fields.Datetime.context_timestamp(self, fields.Datetime.to_datetime(vals['date_order']))
             if not vals.get('is_gift', False):
                 vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order_sdc', sequence_date=seq_date) or '/'
             else:

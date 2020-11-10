@@ -48,6 +48,56 @@ class MrpProduction(models.Model):
     parent_id = fields.Many2one(comodel_name='mrp.production')
     children_ids = fields.One2many(comodel_name='mrp.production', inverse_name='parent_id')
 
+    user_rev = fields.Many2one('res.users', string='Revisó', required=False)
+    user_apr = fields.Many2one('res.users', string='Aprobó', required=False)
+
+    state = fields.Selection([
+        ('draft', 'Elaboración'),
+        ('review', 'Revisión'),
+        ('approv', 'Aprobación'),
+        ('confirmed', 'Confirmed'),
+        ('progress', 'In Progress'),
+        ('to_close', 'To Close'),
+        ('done', 'Done'),
+        ('cancel', 'Cancelled')], string='State',
+        compute='_compute_state', copy=False, index=True, readonly=True,
+        store=True, tracking=True,
+        help=" * Draft: The MO is not confirmed yet.\n"
+             " * Confirmed: The MO is confirmed, the stock rules and the reordering of the components are trigerred.\n"
+             " * In Progress: The production has started (on the MO or on the WO).\n"
+             " * To Close: The production is done, the MO has to be closed.\n"
+             " * Done: The MO is closed, the stock moves are posted. \n"
+             " * Cancelled: The MO has been cancelled, can't be confirmed anymore.")
+
+    def to_review(self):
+        self._check_company()
+        for mrp in self:
+            mrp.write({'state': 'review'})
+        return True
+    
+    def to_approv(self):
+        self._check_company()
+        for mrp in self:
+            mrp.write({'state': 'approv'})
+            mrp.write({'user_rev': self.env.uid})
+        return True
+    
+    def action_confirm(self):
+        self._check_company()
+        for production in self:
+            if not production.move_raw_ids:
+                raise UserError(_("Add some materials to consume before marking this MO as to do."))
+            for move_raw in production.move_raw_ids:
+                move_raw.write({
+                    'unit_factor': move_raw.product_uom_qty / production.product_qty,
+                })
+            production._generate_finished_moves()
+            production.move_raw_ids._adjust_procure_method()
+            (production.move_raw_ids | production.move_finished_ids)._action_confirm()
+        for mrp in self:
+            mrp.write({'user_apr': self.env.uid})
+        return True
+
     def action_print_bom(self):
         data = dict(quantity=self.product_qty, docids=[self.bom_id.id], no_price=True, report_type='bom_structure')
         report = self.env.ref('mrp.action_report_bom_structure').with_context(discard_logo_check=True)
@@ -87,3 +137,48 @@ class MrpProduction(models.Model):
         if 'import_file' in self.env.context:
             production._onchange_move_raw()
         return production
+
+class MrpBomLineOver(models.Model):
+    _inherit = 'mrp.bom.line'
+
+    def _get_default_product_uom_id(self):
+        return self.env['uom.uom'].search([], limit=1, order='id').id
+    
+    product_qty_display = fields.Float('Cantidad', default=1.0, digits='Unit of Measure', required=False)
+    product_uom_id_display = fields.Many2one(
+        'uom.uom', 'Unidad de medida',
+        default=_get_default_product_uom_id, required=True,
+        help="Unit of Measure (Unit of Measure) is the unit of measurement for the inventory control", domain="[('category_id', '=', product_uom_category_id)]")
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for values in vals_list:
+            if 'product_id' in values and 'product_uom_id' not in values:
+                values['product_uom_id'] = self.env['product.product'].browse(values['product_id']).uom_id.id
+        mrp_bom_line = super(MrpBomLineOver, self).create(vals_list)
+        mrp_bom_line.onchange_product_uom_id_display()
+        mrp_bom_line.onchange_product_qty_display()
+        return mrp_bom_line
+
+    @api.onchange('product_uom_id_display')
+    def onchange_product_uom_id_display(self):
+        for mbl in self:
+            res = {}
+            if not mbl.product_uom_id_display or not mbl.product_id:
+                return res
+            if mbl.product_uom_id_display.category_id != mbl.product_id.uom_id.category_id:
+                mbl.product_uom_id_display = self.product_id.uom_id.id
+                res['warning'] = {'title': _('Warning'), 'message': _('The Product Unit of Measure you chose has a different category than in the product form.')}
+        return res
+
+    @api.onchange('product_id')
+    def onchange_product_id_display(self):
+        for mbl in self:
+            if mbl.product_id:
+                mbl.product_uom_id_display = mbl.product_id.uom_id.id
+
+    @api.onchange('product_qty_display', 'product_uom_id_display')
+    def onchange_product_qty_display(self):
+        for mbl in self:
+            if mbl.product_qty_display and mbl.product_uom_id_display:
+                mbl.product_qty = mbl.product_qty_display * mbl.product_uom_id_display.factor_inv * mbl.product_id.uom_id.factor
