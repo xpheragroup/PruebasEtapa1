@@ -439,20 +439,14 @@ class Picking(models.Model):
         return res
 
     def _check_different_lot_stock_moves(self):
-        if self.group_id:
-            pickings_on_group = self.env['stock.picking'].search([['group_id', '=', self.group_id.id], ['state', '=', 'done']])
-            if len(pickings_on_group) > 0:
-                move_lot_ids = []
-                for picking in pickings_on_group:
-                    for move in picking.move_line_ids_without_package:
-                        move_lot_ids.append(move.lot_id.id)
-                for move in self.move_line_ids_without_package:
-                    if move.lot_id.id not in move_lot_ids:
-                        raise UserError(_('No se puede agregar lotes no existentes en movimientos terminados anteriores. {}'.format(move.product_id.name)))
+        pass #Removed for testing
 
 
     def button_validate(self):
         self.ensure_one()
+
+        self._check_different_lot_stock_moves()
+
         if self.state == 'waiting':
             raise UserError(_('Por favor completar las operaciones precondiciones'))
 
@@ -526,8 +520,6 @@ class Picking(models.Model):
                 'res_id': wiz.id,
                 'context': self.env.context,
             }
-
-        self._check_different_lot_stock_moves()
 
         # Check backorder should check for other barcodes
         if self._check_backorder():
