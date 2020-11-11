@@ -11,6 +11,5 @@
     """,
     'author': "Xphera",
     'website': "http://xphera.co",
-    'depends': ['base', 'purchase', 'purchase_requisition'],
-    'license': 'MIT'
+    'depends': ['base', 'purchase', 'purchase_requisition']
 }
