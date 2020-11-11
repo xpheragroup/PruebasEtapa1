@@ -464,7 +464,8 @@ class Picking(models.Model):
     def button_validate(self):
         self.ensure_one()
 
-        self._check_different_lot_stock_moves()
+        if not self.env['mrp.production'].search([['name', '=', self.origin]]):
+            self._check_different_lot_stock_moves()
 
         if self.state == 'waiting':
             raise UserError(_('Por favor completar las operaciones precondiciones'))
