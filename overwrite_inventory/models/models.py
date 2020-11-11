@@ -553,3 +553,11 @@ class Warehouse(models.Model):
     _inherit = "stock.warehouse"
 
     code = fields.Char(size=10)
+class ProductCategory(models.Model):
+    _inherit = 'product.category'
+
+    company_id = fields.Many2one(
+        'res.company',
+        'Company',
+        ondelete='cascade',
+    )
