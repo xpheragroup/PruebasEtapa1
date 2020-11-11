@@ -554,7 +554,6 @@ class Warehouse(models.Model):
     _inherit = "stock.warehouse"
 
     code = fields.Char(size=10)
-<<<<<<< HEAD
 class ProductCategory(models.Model):
     _inherit = 'product.category'
 
@@ -563,7 +562,6 @@ class ProductCategory(models.Model):
         'Company',
         ondelete='cascade',
     )
-=======
 
 class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
@@ -665,4 +663,3 @@ class StockMoveLine(models.Model):
             'product_uom_qty': 0.00,
             'date': fields.Datetime.now(),
         })
->>>>>>> Ambiente1
