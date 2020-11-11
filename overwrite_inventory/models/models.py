@@ -449,16 +449,18 @@ class Picking(models.Model):
                         move_lot_ids.append(move.lot_id.id)
                         key = str(move.product_id)+str(move.lot_id)
                         if move_lot_ids_qty.get(key, False):
-                            if move.qty_done < move_lot_ids_qty.get(key, False):
-                                move_lot_ids_qty[key] = move.qty_done
+                            if move.qty_done * move.product_uom_id.factor_inv< move_lot_ids_qty.get(key, False):
+                                move_lot_ids_qty[key] = move.qty_done * move.product_uom_id.factor_inv
                         else:
-                            move_lot_ids_qty[key] = move.qty_done
+                            move_lot_ids_qty[key] = move.qty_done * move.product_uom_id.factor_inv
                 for move in self.move_line_ids_without_package:
                     key = str(move.product_id)+str(move.lot_id)
                     if move.lot_id.id not in move_lot_ids:
                         raise UserError(_('No se puede agregar lotes no existentes en movimientos terminados anteriores. {}'.format(move.product_id.name)))
-                    if move.qty_done > move_lot_ids_qty.get(key, False):
-                        raise UserError(_('No se puede realizar un movimiento con mayor cantidad de producto terminado que en los anteriores movimientos. {}, {}, {}'.format(move.product_id.name, move.lot_id, move.product_qty)))
+                    print(move.qty_done * move.product_uom_id.factor_inv)
+                    print(move_lot_ids_qty.get(key, False))
+                    if move.qty_done * move.product_uom_id.factor_inv > move_lot_ids_qty.get(key, False):
+                        raise UserError(_('No se puede realizar un movimiento con mayor cantidad de producto terminado que en los anteriores movimientos. {}'.format(move.product_id.name)))
 
 
     def button_validate(self):
