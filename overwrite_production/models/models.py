@@ -109,9 +109,9 @@ class MrpProduction(models.Model):
             production._generate_finished_moves()
             production.move_raw_ids._adjust_procure_method()
             (production.move_raw_ids | production.move_finished_ids)._action_confirm()
-        for mrp in self:
-            mrp.write({'user_apr': self.env.uid})
-            mrp.write({'date_apr': datetime.datetime.now()})
+            for picking in self.env['stock.picking'].search([['origin', '=', production.name]]):
+                if picking.location_dest_id and picking.location_dest_id.name and 'Pre-Producción' in picking.location_dest_id.name:
+                    picking.action_assign() # Doing action assign on created stock picking
         return True
 
     def action_print_bom(self):
