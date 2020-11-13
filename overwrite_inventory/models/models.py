@@ -573,18 +573,6 @@ class Warehouse(models.Model):
     _inherit = "stock.warehouse"
 
     code = fields.Char(size=10)
-<<<<<<< HEAD
-=======
-    user_ids = fields.Many2many('res.users', string='Responsables')
-class ProductCategory(models.Model):
-    _inherit = 'product.category'
-
-    company_id = fields.Many2one(
-        'res.company',
-        'Company',
-        ondelete='cascade',
-    )
->>>>>>> f678a86... Add responsable to stock warehouse
 
 class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
