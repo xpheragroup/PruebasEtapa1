@@ -463,9 +463,28 @@ class Picking(models.Model):
                     if move.qty_done * move.product_uom_id.factor_inv > move_lot_ids_qty.get(key, False):
                         raise UserError(_('No se puede realizar un movimiento con mayor cantidad de producto terminado que en los anteriores movimientos. {}'.format(move.product_id.name)))
 
+    def _check_intrawarehouse_moves(self):
+        def get_root_parent(location):
+            current = location
+            while current.location_id and current.location_id.location_id:
+                current = current.location_id
+            return current
+
+        if self.location_dest_id and self.location_id:
+            warehouse_org_name = get_root_parent(self.location_id).complete_name
+            warehouse_dest_name = get_root_parent(self.location_dest_id).complete_name
+            warehouse_dest = self.env['stock.warehouse'].search([['code', '=', warehouse_dest_name]])
+            warehouse_org = self.env['stock.warehouse'].search([['code', '=', warehouse_org_name]])
+            if warehouse_org_name != warehouse_dest_name and warehouse_dest and warehouse_org:
+                current_user = self.env['res.users'].browse(self.env.uid)
+                responsables = warehouse_dest.user_ids
+                if current_user not in responsables:
+                    raise UserError(_('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
 
     def button_validate(self):
         self.ensure_one()
+
+        self._check_intrawarehouse_moves()
 
         if not self.env['mrp.production'].search([['name', '=', self.origin]]):
             self._check_different_lot_stock_moves()
@@ -554,6 +573,18 @@ class Warehouse(models.Model):
     _inherit = "stock.warehouse"
 
     code = fields.Char(size=10)
+<<<<<<< HEAD
+=======
+    user_ids = fields.Many2many('res.users', string='Responsables')
+class ProductCategory(models.Model):
+    _inherit = 'product.category'
+
+    company_id = fields.Many2one(
+        'res.company',
+        'Company',
+        ondelete='cascade',
+    )
+>>>>>>> f678a86... Add responsable to stock warehouse
 
 class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
