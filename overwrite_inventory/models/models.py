@@ -573,6 +573,7 @@ class Warehouse(models.Model):
     _inherit = "stock.warehouse"
 
     code = fields.Char(size=10)
+     user_ids = fields.Many2many('res.users', string='Responsables')
 
 class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
