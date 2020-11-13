@@ -13,14 +13,6 @@ MAP_INVOICE_TYPE_PARTNER_TYPE = {
     'in_refund': 'supplier',
     'in_receipt': 'supplier',
 }
-
-class AccountJournal(models.Model):
-    _inherit = "account.journal"
-
-    # For Doris requirement
-    # Size: 5 -> 10
-    code = fields.Char(size=10)
-
 class AccountGeneralLedgerReport(models.AbstractModel):
     _inherit = "account.general.ledger"
 
