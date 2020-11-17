@@ -18,8 +18,6 @@ MAP_INVOICE_TYPE_PARTNER_TYPE = {
 class AccountPaymentRegister(models.TransientModel):
     _inherit= 'account.payment.register'
 
-    
-
     consecutivo_de_caja = fields.Char( string='Consecutivo de caja')
 
     def _prepare_payment_vals(self, invoices):

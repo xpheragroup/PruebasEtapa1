@@ -5,6 +5,7 @@ from odoo import models, api, _
 from odoo.tools.misc import format_date
 
 # The original definition is done in account_reports/models/account_general_ledger.py !
+
 class AccountGeneralLedgerReport(models.AbstractModel):
     _inherit = "account.general.ledger"                                                 # Inherit class to make changes on account general ledger
 
