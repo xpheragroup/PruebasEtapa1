@@ -13,11 +13,6 @@ MAP_INVOICE_TYPE_PARTNER_TYPE = {
     'in_refund': 'supplier',
     'in_receipt': 'supplier',
 }
-
-class AccountMove(models.Model):
-    _inherit = "account.move"
-
-    date_order = fields.Datetime('Order Date', copy=False, help="Fecha de la orden de compra.")
 class AccountReport(models.AbstractModel):
     _inherit = 'account.report'
 
