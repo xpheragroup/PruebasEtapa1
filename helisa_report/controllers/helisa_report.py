@@ -12,6 +12,8 @@ class Binary(http.Controller):
         self.stream = BytesIO()
         self.book = xlwt.Workbook(encoding='utf-8')
         self.sheet = self.book.add_sheet(u'Reporte')
+        for i in range(10):
+            self.sheet.col(i).width = 7500
         self.position = 0
 
     def _finish_book(self):
@@ -23,7 +25,7 @@ class Binary(http.Controller):
     def _add_row(self, data):
         index = 0
         for piece in data:
-            self.sheet.write(self.position, index, piece)
+            self.sheet.write(self.position, index, str(piece))
             index += 1
         self.position = self.position + 1
 
@@ -38,6 +40,20 @@ class Binary(http.Controller):
         if not res:
             return request.not_found()
 
+        self._add_row(['DOCUMENTO', 'FECHA', 'NIT', 'VALOR', 'NATURALEZA', 'CENTRO DE COSTO', 'CUENTA', 'No DOCUMENTO', 'DETALLE'])
+        for invoice in res:
+            for detail in invoice.invoice_line_ids:
+                self._add_row([
+                    'FC',
+                    invoice.invoice_date or '' ,
+                    invoice.partner_id.vat or '',
+                    detail.debit if detail.debit > 0 else detail.credit,
+                    'D' if detail.debit > 0 else 'C' ,
+                    detail.analytic_account_id.name or '',
+                    detail.account_id.code,
+                    invoice.name,
+                    detail.name
+                ])
         
         filecontent = self._finish_book() 
         if not filename:
