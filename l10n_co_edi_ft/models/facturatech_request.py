@@ -34,82 +34,64 @@ class FacturatechPlugin(Plugin):
         self.log(envelope, 'facturatech_response')
         return envelope, http_headers
 
-
-class CarvajalUsernameToken(UsernameToken):
+class FacturatechUsernameToken(UsernameToken):
     def _create_password_digest(self):
-        """Carvajal expects a password hashed with sha256 with the
-        PasswordText type, together with a Nonce and Created
-        element. To do so we can manually specify a password_digest
-        (instead of password) to avoid the standard sha1 hashing and
-        we can set use_digest=True to add the Nonce and Created. The
-        only problem with this approach is that the password will have
-        the PasswordDigest type, which Carvajal doesn't accept for
-        some reason. This replaces it with PasswordText, which is
-        commonly used for non-sha1 hashed passwords.
-        """
-        res = super(CarvajalUsernameToken, self)._create_password_digest()
+        """Factura expects a password hashed"""
+        res = super(FacturatechUsernameToken, self)._create_password_digest()
         res[0].attrib['Type'] = res[0].attrib['Type'].replace('PasswordDigest', 'PasswordText')
         return res
 
-
-class CarvajalRequest():
+class FacturatechRequest():
     def __init__(self, username, password, company, account, test_mode):
         self.username = username or ''
         self.password = password or ''
-        self.company = company or ''
-        self.account = account or ''
 
         token = self._create_wsse_header(self.username, self.password)
-        self.client = Client('https://wscenf%s.cen.biz/isows/InvoiceService?wsdl' % ('lab' if test_mode else ''), plugins=[CarvajalPlugin()], wsse=token)
+        self.client = Client('https://ws.facturatech.co/%s/index.php?wsdl' % ('21' if test_mode else '21Pro'), plugins=[FacturatechPlugin()], wsse=token)
 
     def _create_wsse_header(self, username, password):
 
         created = datetime.now()
-        token = CarvajalUsernameToken(username=username, password_digest=sha256(password.encode()).hexdigest(), use_digest=True, created=created)
+        token = FacturatechUsernameToken(username=username, password_digest=password.encode(), use_digest=True, created=created)
 
         return token
 
     def upload(self, filename, xml):
         try:
-            response = self.client.service.Upload(fileName=filename, fileData=base64.b64encode(xml).decode(),
-                                                  companyId=self.company, accountId=self.account)
+            response = self.client.service['FtechAction.uploadInvoiceFile'](xmlBase64=base64.b64encode(xml).decode())
         except Fault as fault:
             _logger.error(fault)
-            raise CarvajalException(fault)
+            raise FacturatechException(fault)
         except socket.timeout as e:
             _logger.error(e)
-            raise CarvajalException(_('Connection to Carvajal timed out. Their API is probably down.'))
+            raise FacturatechException(_('Connection to Facturatech timed out. Their API is probably down.'))
 
         return {
-            'message': response.status,
-            'transactionId': response.transactionId,
+            'message': 'success: %s, error: %s' % (response.success, response.error),
+            'transactionId': response.transaccionID,
         }
 
     def download(self, document_prefix, document_number, document_type):
         try:
-            response = self.client.service.Download(documentPrefix=document_prefix, documentNumber=document_number,
-                                                    documentType=document_type, resourceType='PDF,SIGNED_XML',
-                                                    companyId=self.company, accountId=self.account)
+            response = self.client.service['FtechAction.downloadPDFFile'](prefijo=document_prefix,
+                                                                          folio=document_number)
         except Fault as fault:
             _logger.error(fault)
-            raise CarvajalException(fault)
-
+            raise FacturatechException(fault)
         return {
-            'message': response.status,
-            'zip_b64': base64.b64decode(response.downloadData),
+            'message': 'success: %s, error: %s' % (response.success, response.error),
+            'zip_b64': base64.b64decode(response.resourceData),
         }
 
     def check_status(self, transactionId):
         try:
-            response = self.client.service.DocumentStatus(transactionId=transactionId,
-                                                          companyId=self.company, accountId=self.account)
+            response = self.client.service.DocumentStatus(transactionId=transactionId)
         except Fault as fault:
             _logger.error(fault)
-            raise CarvajalException(fault)
-
+            raise FacturatechException(fault)
         return {
-            'status': response.processStatus,
-            'errorMessage': response.errorMessage if hasattr(response, 'errorMessage') else '',
-            'legalStatus': response.legalStatus if hasattr(response, 'legalStatus') else '',
+            'status': response.success,
+            'errorMessage': response.error,
+            'legalStatus': response.status,
             'governmentResponseDescription': response.governmentResponseDescription if hasattr(response, 'governmentResponseDescription') else '',
         }
