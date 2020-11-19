@@ -42,7 +42,7 @@ class FacturatechUsernameToken(UsernameToken):
         return res
 
 class FacturatechRequest():
-    def __init__(self, username, password, company, account, test_mode):
+    def __init__(self, username, password, test_mode):
         self.username = username or ''
         self.password = password or ''
 
@@ -59,12 +59,14 @@ class FacturatechRequest():
     def upload(self, filename, xml):
         try:
             response = self.client.service['FtechAction.uploadInvoiceFile'](xmlBase64=base64.b64encode(xml).decode())
+            if response.error is not None:
+                raise FacturatechException(response.error)
         except Fault as fault:
             _logger.error(fault)
             raise FacturatechException(fault)
         except socket.timeout as e:
             _logger.error(e)
-            raise FacturatechException(_('Connection to Facturatech timed out. Their API is probably down.'))
+            raise FacturatechException(_('Tiempo agotado para conexión a Facturatech. El API probablemente esté caído.'))
 
         return {
             'message': 'success: %s, error: %s' % (response.success, response.error),
@@ -75,6 +77,8 @@ class FacturatechRequest():
         try:
             response = self.client.service['FtechAction.downloadPDFFile'](prefijo=document_prefix,
                                                                           folio=document_number)
+            if response.error is not None:
+                raise FacturatechException(response.error)
         except Fault as fault:
             _logger.error(fault)
             raise FacturatechException(fault)
