@@ -7,10 +7,6 @@
     'author': "Xphera S.A.S.",
     'website': "http://xphera.co",
     'depends': ['l10n_co_edi_ubl_2_1'],
-    'data': [
-        'views/views.xml',
-        'views/templates.xml',
-    ],
     'demo': [
         'demo/demo.xml',
     ],
