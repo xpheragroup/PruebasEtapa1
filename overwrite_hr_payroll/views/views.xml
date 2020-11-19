@@ -1,0 +1,75 @@
+<odoo>
+    <record id="hr_employee_view_form" model="ir.ui.view">
+        <field name="name">hr.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <group name="work_permit" position="before">
+                <group string= "Salud">
+                    <field name="fuma"/>
+                    <field name="estatura"/>
+                    <field name="anteojos"/>
+                    <field name="factor_rh"/>
+                    <field name="grupo_sanguineo"/>
+                    <field name="embarazo"/>
+                </group>
+            </group>
+        </field>
+    </record>
+    
+      <record id="hr_contract_view_form" model="ir.ui.view">
+        <field name="name">hr.contract.form</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_payroll.hr_contract_form_inherit" />
+        <field name="arch" type="xml">
+         <field name="company_country_id" position="before">
+           <label for="tipo_de_contrato" />
+                <div class="o_row">
+                    <field name="tipo_de_contrato" nolabel="1" />
+                </div>
+          </field>
+            <xpath expr="//div[@name='wage']" position="after">
+                <label for="eps" />
+                <div class="o_row">
+                    <field name="eps" nolabel="1" />
+                </div>
+                <label for="caja_compensacion" />
+                <div class="o_row">
+                    <field name="caja_compensacion" nolabel="1" />
+                </div>
+                <label for="fondo_pension" />
+                <div class="o_row">
+                    <field name="fondo_pension" nolabel="1" />
+                </div>
+                <label for="aseguradora_riesgo" />
+                <div class="o_row">
+                    <field name="aseguradora_riesgo" nolabel="1" />
+                </div>
+                <label for="clase_riesgo" />
+                <div class="o_row">
+                    <field name="clase_riesgo" nolabel="1" />
+                </div>
+                <label for="rodamiento" />
+                <div class="o_row">
+                    <field name="rodamiento" nolabel="1" />
+                </div>
+                <label for="porcentaje_comision" />
+                <div class="o_row">
+                    <field name="porcentaje_comision" nolabel="1" />
+                </div>
+                <label for="comision_es_prestacional" />
+                <div class="o_row">
+                    <field name="comision_es_prestacional" nolabel="1" />
+                </div>
+                <label for="bono_es_prestacional" />
+                <div class="o_row">
+                    <field name="bono_es_prestacional" nolabel="1" />
+                </div>
+                <label for="rodamiento_es_prestacional" />
+                <div class="o_row">
+                    <field name="rodamiento_es_prestacional" nolabel="1" />
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
