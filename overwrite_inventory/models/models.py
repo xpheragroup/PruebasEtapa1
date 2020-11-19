@@ -446,6 +446,8 @@ class Picking(models.Model):
                 move_lot_ids = []
                 move_lot_ids_qty = {}
                 for picking in pickings_on_group:
+                    if 'Retorno' in picking.origin:
+                        pass
                     for move in picking.move_line_ids_without_package:
                         move_lot_ids.append(move.lot_id.id)
                         key = str(move.product_id)+str(move.lot_id)
