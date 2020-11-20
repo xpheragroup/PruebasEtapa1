@@ -7,8 +7,8 @@
     'author': "Xphera S.A.S.",
     'website': "http://xphera.co",
     'depends': ['l10n_co_edi_ubl_2_1'],
-    'demo': [
-        'demo/demo.xml',
+    'data': [
+        'views/electronic_invoice.xml'
     ],
     'installable': True
 }

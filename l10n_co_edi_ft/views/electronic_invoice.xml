@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="electronic_invoice_body_inherit" inherit_id="l10n_co_edi_ubl_2_1.electronic_invoice_body">
+        </template>
+    </data>
+</odoo>
