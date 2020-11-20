@@ -2,6 +2,58 @@
 <odoo>
     <data>
         <template id="electronic_invoice_body_inherit" inherit_id="l10n_co_edi_ubl_2_1.electronic_invoice_body">
+            <xpath expr="//EMI" position="replace">
+                <EMI>
+                    <EMI_1 t-esc="invoice._l10n_co_edi_get_partner_type(company_partner)"/>
+                    <EMI_2 t-esc="company_partner._get_vat_without_verification_code()"/>
+                    <EMI_3 t-esc="invoice._l10n_co_edi_get_carvajal_code_for_document_type(company_partner)"/>
+                    <EMI_4 t-esc="company_partner.l10n_co_edi_fiscal_regimen"/>
+                    <EMI_6 t-esc="company_partner.display_name"/>
+                    <EMI_7 t-esc="company_partner.l10n_co_edi_commercial_name or company_partner.name"/>
+                    <EMI_8/>
+                    <EMI_9/>
+                    <EMI_10 t-esc="invoice._l10n_co_edi_get_company_address(company_partner)"/>
+                    <EMI_11 t-esc="str(company_partner.state_id.l10n_co_edi_code).zfill(2)"/>
+                    <EMI_12/>
+                    <EMI_13 t-esc="company_partner.city_id.name"/>
+                    <EMI_14 t-esc="company_partner.zip"/>
+                    <EMI_15 t-esc="company_partner.country_id.code"/>
+                    <EMI_18/>
+                    <EMI_19 t-esc="company_partner.state_id.name"/>
+                    <EMI_21 t-esc="company_partner.country_id.name"/>
+                    <EMI_22 t-esc="company_partner._get_vat_verification_code()"/>
+                    <EMI_23 t-esc="str(company_partner.city_id.l10n_co_edi_code).zfill(5)"/>
+                    <EMI_24 t-esc="company_partner.l10n_co_edi_commercial_name or company_partner.name"/>
+                    <TAC>
+                        <TAC_1>
+                            <t t-esc="';'.join(company_partner._l10n_co_edi_get_fiscal_values().mapped('name'))"/>
+                        </TAC_1>
+                    </TAC>
+                    <DFE>
+                        <DFE_1 t-esc="str(company_partner.city_id.l10n_co_edi_code).zfill(5)"/>
+                        <DFE_2 t-esc="str(company_partner.state_id.l10n_co_edi_code).zfill(2)"/>
+                        <DFE_3 t-esc="company_partner.country_id.code"/>
+                        <DFE_4 t-esc="str(company_partner.zip).zfill(5)"/>
+                        <DFE_5 t-esc="company_partner.country_id.name"/>
+                        <DFE_6 t-esc="company_partner.state_id.name"/>
+                        <DFE_7 t-esc="company_partner.city_id.name"/>
+                        <DFE_8/>
+                    </DFE>
+                    <ICC>
+                        <ICC_1/>
+                    </ICC>
+                    <CDE>
+                        <CDE_1 t-esc="'2' if sales_partner.type == 'delivery' else '1'"/>
+                        <CDE_2 t-esc="sales_partner.function or 'Representante de Ventas'"/>
+                        <CDE_3 t-esc="company_partner.phone"/>
+                        <CDE_4 t-esc="company_partner.email"/>
+                    </CDE>
+                    <GTE t-if="tax_types">
+                        <GTE_1 t-esc="tax_types[0].code"/>
+                        <GTE_2 t-esc="tax_types[0].name"/>
+                    </GTE>
+                </EMI>
+            </xpath>
         </template>
     </data>
 </odoo>
