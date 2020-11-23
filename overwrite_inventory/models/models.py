@@ -112,6 +112,7 @@ class Inventory(models.Model):
         for product_data in self.env.cr.dictfetchall():
             product_data['company_id'] = self.company_id.id
             product_data['inventory_id'] = self.id
+            product_data['revisado'] = False
             # replace the None the dictionary by False, because falsy values are tested later on
             for void_field in [item[0] for item in product_data.items() if item[1] is None]:
                 product_data[void_field] = False
