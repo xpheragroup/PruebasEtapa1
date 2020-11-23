@@ -112,6 +112,7 @@ class Inventory(models.Model):
         for product_data in self.env.cr.dictfetchall():
             product_data['company_id'] = self.company_id.id
             product_data['inventory_id'] = self.id
+            product_data['revisado'] = False
             # replace the None the dictionary by False, because falsy values are tested later on
             for void_field in [item[0] for item in product_data.items() if item[1] is None]:
                 product_data[void_field] = False
@@ -446,6 +447,8 @@ class Picking(models.Model):
                 move_lot_ids = []
                 move_lot_ids_qty = {}
                 for picking in pickings_on_group:
+                    if 'Retorno' in picking.origin:
+                        pass
                     for move in picking.move_line_ids_without_package:
                         move_lot_ids.append(move.lot_id.id)
                         key = str(move.product_id)+str(move.lot_id)
