@@ -11,12 +11,13 @@ from odoo.tools.float_utils import float_round, float_compare, float_is_zero
 class Inventory(models.Model):
     _inherit = "stock.inventory"
 
-    AJUSTES = [('conteo', 'Por conteo'), ('diferencia','Por diferencia'), ('baja','Baja de inventario')]
-    ajuste = fields.Selection(AJUSTES, 
-        string='Tipo de ajuste',
-        readonly=True,
-        states={'draft': [('readonly', False)]},
-        help="Tipo de ajuste del inventario.")
+    AJUSTES = [('conteo', 'Por conteo'), ('diferencia',
+                                          'Por diferencia'), ('baja', 'Baja de inventario')]
+    ajuste = fields.Selection(AJUSTES,
+                              string='Tipo de ajuste',
+                              readonly=True,
+                              states={'draft': [('readonly', False)]},
+                              help="Tipo de ajuste del inventario.")
 
     def action_open_inventory_lines(self):
         self.ensure_one()
@@ -72,9 +73,11 @@ class Inventory(models.Model):
         # TDE CLEANME: is sql really necessary ? I don't think so
         locations = self.env['stock.location']
         if self.location_ids:
-            locations = self.env['stock.location'].search([('id', 'child_of', self.location_ids.ids)])
+            locations = self.env['stock.location'].search(
+                [('id', 'child_of', self.location_ids.ids)])
         else:
-            locations = self.env['stock.location'].search([('company_id', '=', self.company_id.id), ('usage', 'in', ['internal', 'transit'])])
+            locations = self.env['stock.location'].search(
+                [('company_id', '=', self.company_id.id), ('usage', 'in', ['internal', 'transit'])])
         domain = ' sq.location_id in %s AND pp.active'
         args = (tuple(locations.ids),)
 
@@ -91,7 +94,8 @@ class Inventory(models.Model):
             domain += ' AND sq.product_id in %s'
             args += (tuple(self.product_ids.ids),)
             for product in self.product_ids:
-                stock_quants = self.env['stock.quant'].search(['&', ['product_id', '=', product.id], ['location_id', 'in', locations.ids]])
+                stock_quants = self.env['stock.quant'].search(
+                    ['&', ['product_id', '=', product.id], ['location_id', 'in', locations.ids]])
                 if len(stock_quants) < 1 and product.x_studio_perecedero:
                     for location in locations.ids:
                         self.env['stock.quant'].create({
@@ -100,7 +104,8 @@ class Inventory(models.Model):
                             'company_id': self.company_id.id
                         })
 
-        self.env['stock.quant'].flush(['company_id', 'product_id', 'quantity', 'location_id', 'lot_id', 'package_id', 'owner_id'])
+        self.env['stock.quant'].flush(
+            ['company_id', 'product_id', 'quantity', 'location_id', 'lot_id', 'package_id', 'owner_id'])
         self.env['product.product'].flush(['active'])
         self.env.cr.execute("""SELECT sq.product_id, sum(sq.quantity) as product_qty, sq.location_id, sq.lot_id as prod_lot_id, sq.package_id, sq.owner_id as partner_id
             FROM stock_quant sq
@@ -119,22 +124,28 @@ class Inventory(models.Model):
             product_data['theoretical_qty'] = product_data['product_qty']
             if self.prefill_counted_quantity == 'zero':
                 if 'difference_qty_2' in product_data.keys():
-                    product_data['product_qty'] = 0 + product_data['difference_qty_2']
+                    product_data['product_qty'] = 0 + \
+                        product_data['difference_qty_2']
                 else:
                     product_data['product_qty'] = 0
             if product_data['product_id']:
-                product_data['product_uom_id'] = Product.browse(product_data['product_id']).uom_id.id
+                product_data['product_uom_id'] = Product.browse(
+                    product_data['product_id']).uom_id.id
                 quant_products |= Product.browse(product_data['product_id'])
             vals.append(product_data)
         return vals
 
     def _action_done(self):
-        negative = next((line for line in self.mapped('line_ids') if line.product_qty < 0 and line.product_qty != line.theoretical_qty), False)
-        not_checked = next((line for line in self.mapped('line_ids') if not line.revisado), False)
-        negative_lost = next((line for line in self.mapped('line_ids') if line.perdida < 0), False)
+        negative = next((line for line in self.mapped(
+            'line_ids') if line.product_qty < 0 and line.product_qty != line.theoretical_qty), False)
+        not_checked = next((line for line in self.mapped(
+            'line_ids') if not line.revisado), False)
+        negative_lost = next((line for line in self.mapped(
+            'line_ids') if line.perdida < 0), False)
         print(not_checked)
         if negative:
-            raise UserError(_('You cannot set a negative product quantity in an inventory line:\n\t%s - qty: %s') % (negative.product_id.name, negative.product_qty))
+            raise UserError(_('You cannot set a negative product quantity in an inventory line:\n\t%s - qty: %s') %
+                            (negative.product_id.name, negative.product_qty))
         if not_checked:
             raise UserError(_('No se ha revisado algún producto.'))
         if negative_lost:
@@ -143,6 +154,7 @@ class Inventory(models.Model):
         self.write({'state': 'done'})
         self.post_inventory()
         return True
+
 
 class InventoryLine(models.Model):
     _inherit = "stock.inventory.line"
@@ -156,17 +168,17 @@ class InventoryLine(models.Model):
         string='Motivo de Baja')
 
     showed_qty = fields.Float('Contado',
-        help="Campo que muestra la cantidad contada.",
-        compute="update_showed_quantity",
-        digits='Product Unit of Measure', default=0)
-    
+                              help="Campo que muestra la cantidad contada.",
+                              compute="update_showed_quantity",
+                              digits='Product Unit of Measure', default=0)
+
     difference_qty_2 = fields.Float('Diferencia',
-        help="Diferencia ingresada para el cálculo de la cantidad contada.",
-        digits='Product Unit of Measure', default=0)
+                                    help="Diferencia ingresada para el cálculo de la cantidad contada.",
+                                    digits='Product Unit of Measure', default=0)
 
     perdida = fields.Float('Pérdida',
-        help="Productos perdidos.",
-        digits='Product Unit of Measure', default=0)
+                           help="Productos perdidos.",
+                           digits='Product Unit of Measure', default=0)
 
     prueba = fields.Image('Evidencia')
     costo = fields.Float(related='product_id.standard_price')
@@ -193,13 +205,14 @@ class InventoryLine(models.Model):
     def update_showed_quantity(self):
         for line in self:
             line.showed_qty = line.product_qty
-    
+
     @api.onchange('product_id', 'location_id', 'product_uom_id', 'prod_lot_id', 'partner_id', 'package_id')
     def _onchange_quantity_context(self):
         product_qty = False
         if self.product_id:
             self.product_uom_id = self.product_id.uom_id
-        if self.product_id and self.location_id and self.product_id.uom_id.category_id == self.product_uom_id.category_id:  # TDE FIXME: last part added because crash
+        # TDE FIXME: last part added because crash
+        if self.product_id and self.location_id and self.product_id.uom_id.category_id == self.product_uom_id.category_id:
             theoretical_qty = self.product_id.get_theoretical_quantity(
                 self.product_id.id,
                 self.location_id.id,
@@ -225,6 +238,7 @@ class InventoryLine(models.Model):
             self.product_qty = theoretical_qty + self.difference_qty_2
         self.theoretical_qty = theoretical_qty
 
+
 class StockScrap(models.Model):
     _inherit = 'stock.scrap'
 
@@ -241,7 +255,7 @@ class StockScrap(models.Model):
         'auth': [('readonly', True)],
         'approv': [('readonly', True)],
         'done': [('readonly', True)],
-        }
+    }
 
     company_id = fields.Many2one(states=rule, tracking=1)
     product_id = fields.Many2one(states=rule, tracking=1)
@@ -254,7 +268,7 @@ class StockScrap(models.Model):
     location_id = fields.Many2one(states=rule, tracking=1)
     scrap_location_id = fields.Many2one(states=rule, tracking=1)
     scrap_qty = fields.Float(states=rule, tracking=1)
-    
+
     user_rev = fields.Many2one('res.users', string='Revisó', required=False)
     user_aut = fields.Many2one('res.users', string='Autorizó', required=False)
     user_apr = fields.Many2one('res.users', string='Aprobó', required=False)
@@ -269,16 +283,18 @@ class StockScrap(models.Model):
         ('fec', 'Fecha de Vencimiento'),
         ('hur',	'Hurto')],
         string='Motivo de Baja', states=rule, tracking=1)
-    
+
     def to_review(self):
         self._check_company()
         for scrap in self:
-            scrap.name = self.env['ir.sequence'].next_by_code('stock.scrap') or _('New')
+            scrap.name = self.env['ir.sequence'].next_by_code(
+                'stock.scrap') or _('New')
             scrap.date_done = fields.Datetime.now()
             scrap.write({'state': 'review'})
         if self.product_id.type != 'product':
             return True
-        precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+        precision = self.env['decimal.precision'].precision_get(
+            'Product Unit of Measure')
         location_id = self.location_id
         if self.picking_id and self.picking_id.picking_type_code == 'incoming':
             location_id = self.picking_id.location_dest_id
@@ -288,7 +304,8 @@ class StockScrap(models.Model):
                                                             self.package_id,
                                                             self.owner_id,
                                                             strict=True).mapped('quantity'))
-        scrap_qty = self.product_uom_id._compute_quantity(self.scrap_qty, self.product_id.uom_id)
+        scrap_qty = self.product_uom_id._compute_quantity(
+            self.scrap_qty, self.product_id.uom_id)
         if float_compare(available_qty, scrap_qty, precision_digits=precision) >= 0:
             return True
         else:
@@ -315,7 +332,7 @@ class StockScrap(models.Model):
             scrap.write({'user_rev': self.env.uid})
             scrap.write({'date_rev': datetime.datetime.today()})
         return True
-    
+
     def to_approv(self):
         self._check_company()
         for scrap in self:
@@ -323,7 +340,7 @@ class StockScrap(models.Model):
             scrap.write({'user_aut': self.env.uid})
             scrap.write({'date_aut': datetime.datetime.today()})
         return True
-    
+
     def to_draft(self):
         self._check_company()
         for scrap in self:
@@ -346,7 +363,6 @@ class StockScrap(models.Model):
             scrap.write({'user_apr': self.env.uid})
             scrap.write({'date_apr': datetime.datetime.today()})
         return True
-    
 
     def _prepare_move_values(self):
         self.ensure_one()
@@ -365,20 +381,21 @@ class StockScrap(models.Model):
             'scrapped': True,
             'location_dest_id': self.scrap_location_id.id,
             'move_line_ids': [(0, 0, {'product_id': self.product_id.id,
-                                           'product_uom_id': self.product_uom_id.id, 
-                                           'qty_done': self.scrap_qty,
-                                           'location_id': location_id,
-                                           'location_dest_id': self.scrap_location_id.id,
-                                           'package_id': self.package_id.id, 
-                                           'owner_id': self.owner_id.id,
-                                           'lot_id': self.lot_id.id, })],
-#             'restrict_partner_id': self.owner_id.id,
+                                      'product_uom_id': self.product_uom_id.id,
+                                      'qty_done': self.scrap_qty,
+                                      'location_id': location_id,
+                                      'location_dest_id': self.scrap_location_id.id,
+                                      'package_id': self.package_id.id,
+                                      'owner_id': self.owner_id.id,
+                                      'lot_id': self.lot_id.id, })],
+            #             'restrict_partner_id': self.owner_id.id,
             'picking_id': self.picking_id.id
         }
 
     def action_validate(self):
         self.ensure_one()
         return self.do_scrap()
+
 
 class StockWarnInsufficientQtyScrapOver(models.TransientModel):
     _inherit = 'stock.warn.insufficient.qty.scrap'
@@ -389,29 +406,34 @@ class StockWarnInsufficientQtyScrapOver(models.TransientModel):
     def action_cancel(self):
         return self.scrap_id.to_draft()
 
+
 class Picking(models.Model):
     _inherit = 'stock.picking'
 
     parent_id = fields.Many2one(comodel_name='stock.picking')
-    children_ids = fields.One2many(comodel_name='stock.picking', inverse_name='parent_id')
+    children_ids = fields.One2many(
+        comodel_name='stock.picking', inverse_name='parent_id')
 
     @api.model
     def create(self, vals):
         if vals.get('origin', False):
-            parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split('Retorno de ')[-1]], ['company_id', '=',self.env.company.id]])
+            parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split(
+                'Retorno de ')[-1]], ['company_id', '=', self.env.company.id]])
             if parent:
                 vals['parent_id'] = parent.id
                 vals['company_id'] = parent.company_id.id
 
         defaults = self.default_get(['name', 'picking_type_id'])
-        picking_type = self.env['stock.picking.type'].browse(vals.get('picking_type_id', defaults.get('picking_type_id')))
+        picking_type = self.env['stock.picking.type'].browse(
+            vals.get('picking_type_id', defaults.get('picking_type_id')))
         if vals.get('name', '/') == '/' and defaults.get('name', '/') == '/' and vals.get('picking_type_id', defaults.get('picking_type_id')):
             if picking_type.sequence_id:
                 vals['name'] = picking_type.sequence_id.next_by_id()
 
         # As the on_change in one2many list is WIP, we will overwrite the locations on the stock moves here
         # As it is a create the format will be a list of (0, 0, dict)
-        moves = vals.get('move_lines', []) + vals.get('move_ids_without_package', [])
+        moves = vals.get('move_lines', []) + \
+            vals.get('move_ids_without_package', [])
         if moves and vals.get('location_id') and vals.get('location_dest_id'):
             for move in moves:
                 if len(move) == 3 and move[0] == 0:
@@ -421,7 +443,8 @@ class Picking(models.Model):
                     # picking type was defined) or a different `company_id` (the picking type was
                     # changed for an another company picking type after the move was created).
                     # So, we define the `company_id` in one of these cases.
-                    picking_type = self.env['stock.picking.type'].browse(vals['picking_type_id'])
+                    picking_type = self.env['stock.picking.type'].browse(
+                        vals['picking_type_id'])
                     if 'picking_type_id' not in move[2] or move[2]['picking_type_id'] != picking_type.id:
                         move[2]['picking_type_id'] = picking_type.id
                         move[2]['company_id'] = picking_type.company_id.id
@@ -430,7 +453,8 @@ class Picking(models.Model):
         scheduled_date = vals.pop('scheduled_date', False)
         res = super(Picking, self).create(vals)
         if scheduled_date:
-            res.with_context(mail_notrack=True).write({'scheduled_date': scheduled_date})
+            res.with_context(mail_notrack=True).write(
+                {'scheduled_date': scheduled_date})
         res._autoconfirm_picking()
 
         # set partner as follower
@@ -442,7 +466,8 @@ class Picking(models.Model):
 
     def _check_different_lot_stock_moves(self):
         if self.group_id:
-            pickings_on_group = self.env['stock.picking'].search([['group_id', '=', self.group_id.id], ['state', '=', 'done']])
+            pickings_on_group = self.env['stock.picking'].search(
+                [['group_id', '=', self.group_id.id], ['state', '=', 'done']])
             if len(pickings_on_group) > 0:
                 move_lot_ids = []
                 move_lot_ids_qty = {}
@@ -453,18 +478,22 @@ class Picking(models.Model):
                         move_lot_ids.append(move.lot_id.id)
                         key = str(move.product_id)+str(move.lot_id)
                         if move_lot_ids_qty.get(key, False):
-                            if move.qty_done * move.product_uom_id.factor_inv< move_lot_ids_qty.get(key, False):
-                                move_lot_ids_qty[key] = move.qty_done * move.product_uom_id.factor_inv
+                            if move.qty_done * move.product_uom_id.factor_inv < move_lot_ids_qty.get(key, False):
+                                move_lot_ids_qty[key] = move.qty_done * \
+                                    move.product_uom_id.factor_inv
                         else:
-                            move_lot_ids_qty[key] = move.qty_done * move.product_uom_id.factor_inv
+                            move_lot_ids_qty[key] = move.qty_done * \
+                                move.product_uom_id.factor_inv
                 for move in self.move_line_ids_without_package:
                     key = str(move.product_id)+str(move.lot_id)
                     if move.lot_id.id not in move_lot_ids:
-                        raise UserError(_('No se puede agregar lotes no existentes en movimientos terminados anteriores. {}'.format(move.product_id.name)))
+                        raise UserError(_('No se puede agregar lotes no existentes en movimientos terminados anteriores. {}'.format(
+                            move.product_id.name)))
                     print(move.qty_done * move.product_uom_id.factor_inv)
                     print(move_lot_ids_qty.get(key, False))
                     if move.qty_done * move.product_uom_id.factor_inv > move_lot_ids_qty.get(key, False):
-                        raise UserError(_('No se puede realizar un movimiento con mayor cantidad de producto terminado que en los anteriores movimientos. {}'.format(move.product_id.name)))
+                        raise UserError(_('No se puede realizar un movimiento con mayor cantidad de producto terminado que en los anteriores movimientos. {}'.format(
+                            move.product_id.name)))
 
     def _check_intrawarehouse_moves(self):
         def get_root_parent(location):
@@ -474,15 +503,20 @@ class Picking(models.Model):
             return current
 
         if self.location_dest_id and self.location_id:
-            warehouse_org_name = get_root_parent(self.location_id).complete_name
-            warehouse_dest_name = get_root_parent(self.location_dest_id).complete_name
-            warehouse_dest = self.env['stock.warehouse'].search([['code', '=', warehouse_dest_name]])
-            warehouse_org = self.env['stock.warehouse'].search([['code', '=', warehouse_org_name]])
+            warehouse_org_name = get_root_parent(
+                self.location_id).complete_name
+            warehouse_dest_name = get_root_parent(
+                self.location_dest_id).complete_name
+            warehouse_dest = self.env['stock.warehouse'].search(
+                [['code', '=', warehouse_dest_name]])
+            warehouse_org = self.env['stock.warehouse'].search(
+                [['code', '=', warehouse_org_name]])
             if warehouse_org_name != warehouse_dest_name and warehouse_dest and warehouse_org:
                 current_user = self.env['res.users'].browse(self.env.uid)
                 responsables = warehouse_dest.user_ids
                 if current_user not in responsables:
-                    raise UserError(_('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
+                    raise UserError(
+                        _('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
 
     def button_validate(self):
         self.ensure_one()
@@ -493,7 +527,8 @@ class Picking(models.Model):
             self._check_different_lot_stock_moves()
 
         if self.state == 'waiting':
-            raise UserError(_('Por favor completar las operaciones precondiciones'))
+            raise UserError(
+                _('Por favor completar las operaciones precondiciones'))
 
         if not self.move_lines and not self.move_line_ids:
             raise UserError(_('Please add some items to move.'))
@@ -509,11 +544,15 @@ class Picking(models.Model):
 
         # If no lots when needed, raise error
         picking_type = self.picking_type_id
-        precision_digits = self.env['decimal.precision'].precision_get('Product Unit of Measure')
-        no_quantities_done = all(float_is_zero(move_line.qty_done, precision_digits=precision_digits) for move_line in self.move_line_ids.filtered(lambda m: m.state not in ('done', 'cancel')))
-        no_reserved_quantities = all(float_is_zero(move_line.product_qty, precision_rounding=move_line.product_uom_id.rounding) for move_line in self.move_line_ids)
+        precision_digits = self.env['decimal.precision'].precision_get(
+            'Product Unit of Measure')
+        no_quantities_done = all(float_is_zero(move_line.qty_done, precision_digits=precision_digits)
+                                 for move_line in self.move_line_ids.filtered(lambda m: m.state not in ('done', 'cancel')))
+        no_reserved_quantities = all(float_is_zero(
+            move_line.product_qty, precision_rounding=move_line.product_uom_id.rounding) for move_line in self.move_line_ids)
         if no_reserved_quantities and no_quantities_done:
-            raise UserError(_('You cannot validate a transfer if no quantites are reserved nor done. To force the transfer, switch in edit more and encode the done quantities.'))
+            raise UserError(
+                _('You cannot validate a transfer if no quantites are reserved nor done. To force the transfer, switch in edit more and encode the done quantities.'))
 
         if picking_type.use_create_lots or picking_type.use_existing_lots:
             lines_to_check = self.move_line_ids
@@ -527,7 +566,8 @@ class Picking(models.Model):
                 product = line.product_id
                 if product and product.tracking != 'none':
                     if not line.lot_name and not line.lot_id:
-                        raise UserError(_('You need to supply a Lot/Serial number for product %s.') % product.display_name)
+                        raise UserError(
+                            _('You need to supply a Lot/Serial number for product %s.') % product.display_name)
 
         # Propose to use the sms mechanism the first time a delivery
         # picking is validated. Whatever the user's decision (use it or not),
@@ -539,7 +579,8 @@ class Picking(models.Model):
 
         if no_quantities_done:
             view = self.env.ref('stock.view_immediate_transfer')
-            wiz = self.env['stock.immediate.transfer'].create({'pick_ids': [(4, self.id)]})
+            wiz = self.env['stock.immediate.transfer'].create(
+                {'pick_ids': [(4, self.id)]})
             return {
                 'name': _('Immediate Transfer?'),
                 'type': 'ir.actions.act_window',
@@ -554,7 +595,8 @@ class Picking(models.Model):
 
         if self._get_overprocessed_stock_moves() and not self._context.get('skip_overprocessed_check'):
             view = self.env.ref('stock.view_overprocessed_transfer')
-            wiz = self.env['stock.overprocessed.transfer'].create({'picking_id': self.id})
+            wiz = self.env['stock.overprocessed.transfer'].create(
+                {'picking_id': self.id})
             return {
                 'type': 'ir.actions.act_window',
                 'view_mode': 'form',
@@ -572,19 +614,13 @@ class Picking(models.Model):
         self.action_done()
         return
 
+
 class Warehouse(models.Model):
     _inherit = "stock.warehouse"
 
     code = fields.Char(size=10)
     user_ids = fields.Many2many('res.users', string='Responsables')
-class ProductCategory(models.Model):
-    _inherit = 'product.category'
 
-    company_id = fields.Many2one(
-        'res.company',
-        'Company',
-        ondelete='cascade',
-    )
 
 class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
@@ -609,15 +645,19 @@ class StockMoveLine(models.Model):
         ml_to_delete = self.env['stock.move.line']
         for ml in self:
             # Check here if `ml.qty_done` respects the rounding of `ml.product_uom_id`.
-            uom_qty = float_round(ml.qty_done, precision_rounding=ml.product_uom_id.rounding, rounding_method='HALF-UP')
-            precision_digits = self.env['decimal.precision'].precision_get('Product Unit of Measure')
-            qty_done = float_round(ml.qty_done, precision_digits=precision_digits, rounding_method='HALF-UP')
+            uom_qty = float_round(
+                ml.qty_done, precision_rounding=ml.product_uom_id.rounding, rounding_method='HALF-UP')
+            precision_digits = self.env['decimal.precision'].precision_get(
+                'Product Unit of Measure')
+            qty_done = float_round(
+                ml.qty_done, precision_digits=precision_digits, rounding_method='HALF-UP')
             if float_compare(uom_qty, qty_done, precision_digits=precision_digits) != 0:
                 raise UserError(_('The quantity done for the product "%s" doesn\'t respect the rounding precision \
                                   defined on the unit of measure "%s". Please change the quantity done or the \
                                   rounding precision of your unit of measure.') % (ml.product_id.display_name, ml.product_uom_id.name))
 
-            qty_done_float_compared = float_compare(ml.qty_done, 0, precision_rounding=ml.product_uom_id.rounding)
+            qty_done_float_compared = float_compare(
+                ml.qty_done, 0, precision_rounding=ml.product_uom_id.rounding)
             if qty_done_float_compared > 0:
                 if ml.product_id.tracking != 'none':
                     picking_type_id = ml.move_id.picking_type_id
@@ -628,7 +668,8 @@ class StockMoveLine(models.Model):
                             # `use_create_lots` and `use_existing_lots`.
                             if ml.lot_name and not ml.lot_id:
                                 lot = self.env['stock.production.lot'].create(
-                                    {'name': ml.lot_name, 'product_id': ml.product_id.id, 'company_id': ml.move_id.company_id.id}
+                                    {'name': ml.lot_name, 'product_id': ml.product_id.id,
+                                        'company_id': ml.move_id.company_id.id}
                                 )
                                 ml.write({'lot_id': lot.id})
                         elif not picking_type_id.use_create_lots and not picking_type_id.use_existing_lots:
@@ -642,7 +683,8 @@ class StockMoveLine(models.Model):
                         continue
 
                     if not ml.lot_id:
-                        raise UserError(_('You need to supply a Lot/Serial number for product %s.') % ml.product_id.display_name)
+                        raise UserError(
+                            _('You need to supply a Lot/Serial number for product %s.') % ml.product_id.display_name)
             elif qty_done_float_compared < 0:
                 raise UserError(_('No negative quantities allowed'))
             else:
@@ -659,27 +701,38 @@ class StockMoveLine(models.Model):
 
                 # if this move line is force assigned, unreserve elsewhere if needed
                 if not ml._should_bypass_reservation(ml.location_id) and float_compare(ml.qty_done, ml.product_uom_qty, precision_rounding=rounding) > 0:
-                    qty_done_product_uom = ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id, rounding_method='HALF-UP')
+                    qty_done_product_uom = ml.product_uom_id._compute_quantity(
+                        ml.qty_done, ml.product_id.uom_id, rounding_method='HALF-UP')
                     extra_qty = qty_done_product_uom - ml.product_qty
-                    ml._free_reservation(ml.product_id, ml.location_id, extra_qty, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id, ml_to_ignore=done_ml)
+                    ml._free_reservation(ml.product_id, ml.location_id, extra_qty, lot_id=ml.lot_id,
+                                         package_id=ml.package_id, owner_id=ml.owner_id, ml_to_ignore=done_ml)
                 # unreserve what's been reserved
                 if not ml._should_bypass_reservation(ml.location_id) and ml.product_id.type == 'product' and ml.product_qty:
                     try:
-                        Quant._update_reserved_quantity(ml.product_id, ml.location_id, -ml.product_qty * ml.product_uom_id.factor * ml.product_id.uom_id.factor_inv, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id, strict=True)
+                        Quant._update_reserved_quantity(ml.product_id, ml.location_id, -ml.product_qty * ml.product_uom_id.factor *
+                                                        ml.product_id.uom_id.factor_inv, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id, strict=True)
                     except UserError:
-                        Quant._update_reserved_quantity(ml.product_id, ml.location_id, -ml.product_qty * ml.product_uom_id.factor * ml.product_id.uom_id.factor_inv, lot_id=False, package_id=ml.package_id, owner_id=ml.owner_id, strict=True)
+                        Quant._update_reserved_quantity(ml.product_id, ml.location_id, -ml.product_qty * ml.product_uom_id.factor *
+                                                        ml.product_id.uom_id.factor_inv, lot_id=False, package_id=ml.package_id, owner_id=ml.owner_id, strict=True)
 
                 # move what's been actually done
-                quantity = ml.product_uom_id._compute_quantity(ml.qty_done, ml.move_id.product_id.uom_id, rounding_method='HALF-UP')
-                available_qty, in_date = Quant._update_available_quantity(ml.product_id, ml.location_id, -quantity, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id)
+                quantity = ml.product_uom_id._compute_quantity(
+                    ml.qty_done, ml.move_id.product_id.uom_id, rounding_method='HALF-UP')
+                available_qty, in_date = Quant._update_available_quantity(
+                    ml.product_id, ml.location_id, -quantity, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id)
                 if available_qty < 0 and ml.lot_id:
                     # see if we can compensate the negative quants with some untracked quants
-                    untracked_qty = Quant._get_available_quantity(ml.product_id, ml.location_id, lot_id=False, package_id=ml.package_id, owner_id=ml.owner_id, strict=True)
+                    untracked_qty = Quant._get_available_quantity(
+                        ml.product_id, ml.location_id, lot_id=False, package_id=ml.package_id, owner_id=ml.owner_id, strict=True)
                     if untracked_qty:
-                        taken_from_untracked_qty = min(untracked_qty, abs(quantity))
-                        Quant._update_available_quantity(ml.product_id, ml.location_id, -taken_from_untracked_qty, lot_id=False, package_id=ml.package_id, owner_id=ml.owner_id)
-                        Quant._update_available_quantity(ml.product_id, ml.location_id, taken_from_untracked_qty, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id)
-                Quant._update_available_quantity(ml.product_id, ml.location_dest_id, quantity, lot_id=ml.lot_id, package_id=ml.result_package_id, owner_id=ml.owner_id, in_date=in_date)
+                        taken_from_untracked_qty = min(
+                            untracked_qty, abs(quantity))
+                        Quant._update_available_quantity(
+                            ml.product_id, ml.location_id, -taken_from_untracked_qty, lot_id=False, package_id=ml.package_id, owner_id=ml.owner_id)
+                        Quant._update_available_quantity(
+                            ml.product_id, ml.location_id, taken_from_untracked_qty, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id)
+                Quant._update_available_quantity(ml.product_id, ml.location_dest_id, quantity, lot_id=ml.lot_id,
+                                                 package_id=ml.result_package_id, owner_id=ml.owner_id, in_date=in_date)
             done_ml |= ml
         # Reset the reserved quantity as we just moved it to the destination location.
         (self - ml_to_delete).with_context(bypass_reservation_update=True).write({
