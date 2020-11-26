@@ -10,4 +10,18 @@
             </xpath>
         </field>
     </record>
+    <template id="report_invoice_document_inherit_overwrite_account" inherit_id="account.report_invoice_document">
+        <xpath expr="//tr[@class='border-black o_subtotal']" position="after">
+            <t t-foreach="o.get_taxes()" t-as="tax">
+                <tr>
+                    <td>
+                        <t t-esc="tax[0]" />
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="tax[1]" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+    </template>
 </odoo>
