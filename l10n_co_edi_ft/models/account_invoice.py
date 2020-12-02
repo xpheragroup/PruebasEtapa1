@@ -92,8 +92,13 @@ class AccountMove(models.Model):
     def _l10n_co_edi_download_electronic_invoice(self):
         request = self._l10n_co_edi_create_ft_request()
         try:
-            response = request.download(
-                self.journal_id.sequence_id.prefix, self.name.split(self.journal_id.sequence_id.prefix)[1])
+            pref = self.name[0:4]
+            numb = self.name[4:]
+            print('Pref: ', pref)
+            print('Num: ', numb)
+            response = request.download(pref, numb)
+            cufe = request.get_cufe(pref, numb)['cufe']
+            self.l10n_co_edi_cufe_cude_ref = cufe
         except FacturatechWSException as e:
             return _('Electronic invoice download failed. Message from Carvajal:<br/>%s') % e, []
         else:
@@ -111,7 +116,6 @@ class AccountMove(models.Model):
 
     def _l10n_co_edi_generate_xml(self):
         invoice = super(AccountMove, self)._l10n_co_edi_generate_xml()
-        # print(invoice)
         return invoice
 
     def l10n_co_edi_check_status_electronic_invoice(self):

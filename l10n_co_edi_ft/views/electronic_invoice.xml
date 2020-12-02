@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <template id="tim_section_inherit" inherit_id="l10n_co_edi_ubl_2_1.tim_section">
+            <xpath expr="//IMP" position="replace">
+                <IMP t-foreach="move_lines.get(move_line)" t-as="move">
+                    <IMP_1 t-esc="move.tax_line_id.l10n_co_edi_type.code"/>
+                    <IMP_2 t-esc="'%.2f' % (abs((move.amount_currency or move.balance) * 100 / 15) if move.tax_line_id.l10n_co_edi_type.code == '05' else move.tax_base_amount if move.currency_id == move.company_id.currency_id else move.company_id.currency_id._convert(move.tax_base_amount, move.currency_id, move.company_id, invoice.invoice_date))"/>
+                    <IMP_3 t-esc="invoice.currency_id.name"/>
+                    <IMP_4 t-esc="'%.2f' % abs(move.amount_currency or move.balance)"/>
+                    <IMP_5 t-esc="invoice.currency_id.name"/>
+                    <t t-if="move.tax_line_id.amount_type == 'fixed'">
+                        <IMP_7 t-esc="'1'"/>
+                        <IMP_8 t-esc="'BO' if move.tax_line_id.l10n_co_edi_type.code == '22' else '94'"/>
+                        <IMP_9 t-esc="move.tax_line_id.amount"/>
+                        <IMP_10 t-esc="invoice.currency_id.name"/>
+                    </t>
+                    <t t-else="">
+                        <IMP_6 t-esc="'15' if move.tax_line_id.l10n_co_edi_type.code == '05' else abs(move.tax_line_id.amount)"/>
+                    </t>
+                </IMP>
+            </xpath>
+        </template>
         <template id="electronic_invoice_body_inherit" inherit_id="l10n_co_edi_ubl_2_1.electronic_invoice_body">
             <xpath expr="//EMI" position="replace">
                 <EMI>
@@ -39,9 +59,6 @@
                         <DFE_7 t-esc="company_partner.city_id.name"/>
                         <DFE_8/>
                     </DFE>
-                    <ICC>
-                        <ICC_1/>
-                    </ICC>
                     <CDE>
                         <CDE_1 t-esc="'2' if sales_partner.type == 'delivery' else '1'"/>
                         <CDE_2 t-esc="sales_partner.function or 'Representante de Ventas'"/>
@@ -166,6 +183,11 @@
                 </IIM>
             </xpath>
             <xpath expr="//IAE" position="replace">
+            </xpath>
+            <xpath expr="//MEP_3" position="replace">
+                <MEP_3 t-esc="invoice.invoice_date_due if not invoice.l10n_co_edi_is_direct_payment else None"/>
+            </xpath>
+            <xpath expr="//IRF" position="replace">
             </xpath>
         </template>
     </data>
