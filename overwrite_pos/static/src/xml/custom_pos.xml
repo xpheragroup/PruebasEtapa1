@@ -9,9 +9,6 @@
         <t t-jquery="button[class='input-button numpad-minus']" t-operation="replace">
             <button class="mode-button disabled-mode" disabled="1">+/-</button>
         </t>
-        <t t-jquery="button[data-mode='discount']" t-operation="replace">
-        <button class="mode-button disabled-mode" data-mode='discount' disabled="1">Desc.</button>
-        </t>
     </t>
     <t t-extend="ProductListWidget">
         <t t-jquery="div[class='product-list-container']" t-operation="replace">
