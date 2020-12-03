@@ -13,6 +13,9 @@ class Inventory(models.Model):
 
     AJUSTES = [('conteo', 'Por conteo'), ('diferencia',
                                           'Por diferencia'), ('baja', 'Baja de inventario')]
+    location_dest_id = fields.Many2one('stock.location', 'Location destiny', check_company=True,
+                                       domain="[['scrap_location', '=', True]]",
+                                       index=True, required=True)
     ajuste = fields.Selection(AJUSTES,
                               string='Tipo de ajuste',
                               readonly=True,
@@ -186,27 +189,27 @@ class InventoryLine(models.Model):
     disposicion_final = fields.Char()
     fecha_disposicion_final = fields.Date()
 
-    @api.depends('costo', 'perdida')
+    @ api.depends('costo', 'perdida')
     def _compute_lost(self):
         for line in self:
             line.total_perdida = line.costo * line.perdida
 
-    @api.onchange('perdida')
+    @ api.onchange('perdida')
     def update_quantity_by_perdida(self):
         for line in self:
             line.product_qty = line.theoretical_qty - line.perdida
 
-    @api.onchange('difference_qty_2')
+    @ api.onchange('difference_qty_2')
     def update_quantity_by_difference(self):
         for line in self:
             line.product_qty = line.theoretical_qty + line.difference_qty_2
 
-    @api.onchange('product_qty')
+    @ api.onchange('product_qty')
     def update_showed_quantity(self):
         for line in self:
             line.showed_qty = line.product_qty
 
-    @api.onchange('product_id', 'location_id', 'product_uom_id', 'prod_lot_id', 'partner_id', 'package_id')
+    @ api.onchange('product_id', 'location_id', 'product_uom_id', 'prod_lot_id', 'partner_id', 'package_id')
     def _onchange_quantity_context(self):
         product_qty = False
         if self.product_id:
@@ -237,6 +240,12 @@ class InventoryLine(models.Model):
             # avoid to reset quantity when user manually set it.
             self.product_qty = theoretical_qty + self.difference_qty_2
         self.theoretical_qty = theoretical_qty
+
+    def _get_virtual_location(self):
+        if self.inventory_id.ajuste == 'baja':
+            return self.inventory_id.location_dest_id
+        else:
+            return self.product_id.with_context(force_company=self.company_id.id).property_stock_inventory
 
 
 class StockScrap(models.Model):
@@ -414,7 +423,7 @@ class Picking(models.Model):
     children_ids = fields.One2many(
         comodel_name='stock.picking', inverse_name='parent_id')
 
-    @api.model
+    @ api.model
     def create(self, vals):
         if vals.get('origin', False):
             parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split(
