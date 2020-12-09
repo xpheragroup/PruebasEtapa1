@@ -759,3 +759,9 @@ class StockMoveLine(models.Model):
             'product_uom_qty': 0.00,
             'date': fields.Datetime.now(),
         })
+
+
+class StockValuationLayer(models.Model):
+
+    _inherit = 'stock.valuation.layer'
+    categ_id = fields.Many2one(store=True)
