@@ -33,6 +33,42 @@ class PurchaseOrder(models.Model):
                         tax.amount * line.product_qty / 100
         return [(k, v) for k, v in taxes.items()]
 
+    def button_confirm(self):
+        if self.picking_type_id == self._default_picking_type():
+            value = self.env['overwrite_purchase.button_confirm'].sudo().create([
+            ])
+            view = self.env.ref('overwrite_purchase.button_confirm_form')
+            return {
+                'type': 'ir.actions.act_window',
+                'name': "Confirmar 'Entregar a'",
+                'res_model': 'overwrite_purchase.button_confirm',
+                'views': [(view.id, 'form')],
+                'target': 'new',
+                'res_id': value.id,
+                'context': {'purchase': self.id}
+            }
+        else:
+            self.button_confirm_second_confirm()
+
+    def button_confirm_second_confirm(self):
+        for order in self:
+            if order.state not in ['draft', 'sent']:
+                continue
+            order._add_supplier_to_product()
+            # Deal with double validation process
+            if order.company_id.po_double_validation == 'one_step'\
+                    or (order.company_id.po_double_validation == 'two_step'
+                        and order.amount_total < self.env.company.currency_id._convert(
+                            order.company_id.po_double_validation_amount, order.currency_id, order.company_id, order.date_order or fields.Date.today()))\
+                    or order.user_has_groups('purchase.group_purchase_manager'):
+                if not self.is_gift:
+                    order.write(
+                        {'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
+                order.button_approve()
+            else:
+                order.write({'state': 'to approve'})
+        return True
+
     def action_view_invoice(self):
         '''
         This function returns an action that display existing vendor bills of given purchase order ids.
@@ -88,22 +124,3 @@ class PurchaseOrder(models.Model):
                     'purchase.gift', sequence_date=seq_date) or '/'
             vals['codigo_solicitud_cotizacion'] = vals['name']
         return super(PurchaseOrder, self).create(vals)
-
-    def button_confirm(self):
-        for order in self:
-            if order.state not in ['draft', 'sent']:
-                continue
-            order._add_supplier_to_product()
-            # Deal with double validation process
-            if order.company_id.po_double_validation == 'one_step'\
-                    or (order.company_id.po_double_validation == 'two_step'
-                        and order.amount_total < self.env.company.currency_id._convert(
-                            order.company_id.po_double_validation_amount, order.currency_id, order.company_id, order.date_order or fields.Date.today()))\
-                    or order.user_has_groups('purchase.group_purchase_manager'):
-                if not self.is_gift:
-                    order.write(
-                        {'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
-                order.button_approve()
-            else:
-                order.write({'state': 'to approve'})
-        return True
