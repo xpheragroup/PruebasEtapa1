@@ -8,6 +8,7 @@ from odoo.tools.float_utils import float_compare
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools.misc import formatLang, get_lang
 
+
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
@@ -17,17 +18,19 @@ class PurchaseOrder(models.Model):
     codigo_solicitud_cotizacion = fields.Char()
 
     def print_quotation(self):
-            self.write({'state': "sent"})
-            return self.env.ref('overwrite_purchase.report_purchase_quotation').report_action(self)
-    
+        self.write({'state': "sent"})
+        return self.env.ref('overwrite_purchase.report_purchase_quotation').report_action(self)
+
     def get_taxes(self):
         taxes = {}
         for line in self.order_line:
             for tax in line.taxes_id:
                 if taxes.get(tax.name) is None:
-                    taxes[tax.name] = line.price_unit * tax.amount * line.product_qty / 100
+                    taxes[tax.name] = line.price_unit * \
+                        tax.amount * line.product_qty / 100
                 else:
-                    taxes[tax.name] += line.price_unit * tax.amount * line.product_qty / 100
+                    taxes[tax.name] += line.price_unit * \
+                        tax.amount * line.product_qty / 100
         return [(k, v) for k, v in taxes.items()]
 
     def action_view_invoice(self):
@@ -51,12 +54,15 @@ class PurchaseOrder(models.Model):
         self.sudo()._read(['invoice_ids'])
         # choose the view_mode accordingly
         if len(self.invoice_ids) > 1 and not create_bill:
-            result['domain'] = "[('id', 'in', " + str(self.invoice_ids.ids) + ")]"
+            result['domain'] = "[('id', 'in', " + \
+                str(self.invoice_ids.ids) + ")]"
         else:
             res = self.env.ref('account.view_move_form', False)
             form_view = [(res and res.id or False, 'form')]
             if 'views' in result:
-                result['views'] = form_view + [(state,view) for state,view in action['views'] if view != 'form']
+                result['views'] = form_view + \
+                    [(state, view)
+                     for state, view in action['views'] if view != 'form']
             else:
                 result['views'] = form_view
             # Do not set an invoice_id if we want to create a new bill.
@@ -69,14 +75,17 @@ class PurchaseOrder(models.Model):
 
     @api.model
     def create(self, vals):
-        if vals.get('name', 'New') == 'New' or  vals.get('name', 'Nuevo') == 'Nuevo':
+        if vals.get('name', 'New') == 'New' or vals.get('name', 'Nuevo') == 'Nuevo':
             seq_date = None
             if 'date_order' in vals:
-                seq_date = fields.Datetime.context_timestamp(self, fields.Datetime.to_datetime(vals['date_order']))
+                seq_date = fields.Datetime.context_timestamp(
+                    self, fields.Datetime.to_datetime(vals['date_order']))
             if not vals.get('is_gift', False):
-                vals['name'] = self.env['ir.sequence'].next_by_code('purchase.order_sdc', sequence_date=seq_date) or '/'
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'purchase.order_sdc', sequence_date=seq_date) or '/'
             else:
-                vals['name'] = self.env['ir.sequence'].next_by_code('purchase.gift', sequence_date=seq_date) or '/'
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'purchase.gift', sequence_date=seq_date) or '/'
             vals['codigo_solicitud_cotizacion'] = vals['name']
         return super(PurchaseOrder, self).create(vals)
 
@@ -87,13 +96,14 @@ class PurchaseOrder(models.Model):
             order._add_supplier_to_product()
             # Deal with double validation process
             if order.company_id.po_double_validation == 'one_step'\
-                    or (order.company_id.po_double_validation == 'two_step'\
+                    or (order.company_id.po_double_validation == 'two_step'
                         and order.amount_total < self.env.company.currency_id._convert(
                             order.company_id.po_double_validation_amount, order.currency_id, order.company_id, order.date_order or fields.Date.today()))\
                     or order.user_has_groups('purchase.group_purchase_manager'):
                 if not self.is_gift:
-                    order.write({'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
+                    order.write(
+                        {'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
                 order.button_approve()
             else:
                 order.write({'state': 'to approve'})
-        return True    
+        return True
