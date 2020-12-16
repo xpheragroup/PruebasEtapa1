@@ -403,6 +403,21 @@ class StockScrap(models.Model):
 
     def action_validate(self):
         self.ensure_one()
+        if self.location_id.id == self._get_default_location_id():
+            view = self.env.ref('overwrite_inventory.button_confirm_form')
+            return {
+                'type': 'ir.actions.act_window',
+                'name': "Confirmar 'Ubicación Origen'",
+                'res_model': 'overwrite_inventory.button_confirm',
+                'views': [(view.id, 'form')],
+                'target': 'new',
+                'context': {'scrap': self.id}
+            }
+        else:
+            return self.do_scrap()
+
+    def action_validate_second_confirm(self):
+        self.ensure_one()
         return self.do_scrap()
 
 

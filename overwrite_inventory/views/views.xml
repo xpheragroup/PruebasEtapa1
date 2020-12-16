@@ -259,4 +259,18 @@
             </xpath>
         </field>
     </record>
+    <record id="button_confirm_form" model="ir.ui.view">
+        <field name="name">Confirm Button</field>
+        <field name="model">overwrite_inventory.button_confirm</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Confirmar 'Entregar a'">
+                <span>Por favor, confirme que fue validado el campo 'Ubicación Origen'</span>
+                <footer>
+                    <button name="button_confirm" string="Confirmar" class="oe_highlight" type="object"/>
+                    <button name="cancel" string="Cancelar" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
 </odoo>
