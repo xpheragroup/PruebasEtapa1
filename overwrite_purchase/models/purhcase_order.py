@@ -15,6 +15,9 @@ class PurchaseOrder(models.Model):
     name = fields.Char(default='Nuevo')
     is_gift = fields.Boolean('Es regalo')
 
+    user_rev = fields.Many2one('res.users', string='Revisó', required=False)
+    date_rev = fields.Datetime(string='Fecha revisó')
+
     codigo_solicitud_cotizacion = fields.Char()
 
     def print_quotation(self):
@@ -52,18 +55,7 @@ class PurchaseOrder(models.Model):
             if order.state not in ['draft', 'sent']:
                 continue
             order._add_supplier_to_product()
-            # Deal with double validation process
-            if order.company_id.po_double_validation == 'one_step'\
-                    or (order.company_id.po_double_validation == 'two_step'
-                        and order.amount_total < self.env.company.currency_id._convert(
-                            order.company_id.po_double_validation_amount, order.currency_id, order.company_id, order.date_order or fields.Date.today()))\
-                    or order.user_has_groups('purchase.group_purchase_manager'):
-                if not self.is_gift:
-                    order.write(
-                        {'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
-                order.button_approve()
-            else:
-                order.write({'state': 'to approve'})
+            order.write({'state': 'to approve', 'user_rev': self.env.uid})
         return True
 
     def action_view_invoice(self):
