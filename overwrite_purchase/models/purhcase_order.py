@@ -26,7 +26,7 @@ class PurchaseOrder(models.Model):
 
     def button_approve(self, force=False):
         if not self.is_gift:
-            order.write(
+            self.write(
                 {'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
         return super(PurchaseOrder, self).button_approve(force=force)
 
