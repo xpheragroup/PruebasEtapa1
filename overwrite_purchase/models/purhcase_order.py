@@ -55,7 +55,8 @@ class PurchaseOrder(models.Model):
             if order.state not in ['draft', 'sent']:
                 continue
             order._add_supplier_to_product()
-            order.write({'state': 'to approve', 'user_rev': self.env.uid})
+            order.write({'state': 'to approve', 'user_rev': self.env.uid,
+                         'date_rev': self.datetime.datetime.now()})
         return True
 
     def action_view_invoice(self):
