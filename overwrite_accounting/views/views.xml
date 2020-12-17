@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="button_confirm_form" model="ir.ui.view">
+        <field name="name">Confirm Button</field>
+        <field name="model">overwrite_accounting.button.confirm</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Confirmar saldo negativo">
+                <span>Por favor, confirme si desea que el diario a deducir tenga saldos negativos.</span>
+                <footer>
+                    <button name="button_confirm" string="Confirmar" class="oe_highlight" type="object"/>
+                    <button name="cancel" string="Cancelar" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

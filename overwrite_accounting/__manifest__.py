@@ -13,6 +13,7 @@
     'category': 'Accounting',
     'depends': ['base', 'account', 'account_reports'],
     'data': [
+        'views/views.xml',
         'views/templates.xml',
     ],
 }
