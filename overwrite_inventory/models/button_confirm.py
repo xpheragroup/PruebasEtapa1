@@ -2,7 +2,7 @@ from odoo import models
 
 
 class button_confirm(models.TransientModel):
-    _name = "overwrite_inventory.button_confirm"
+    _name = "overwrite_inventory.button.confirm"
 
     def button_confirm(self):
         query = [['id', '=', self._context['srap']]]

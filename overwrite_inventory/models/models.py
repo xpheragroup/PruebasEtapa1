@@ -408,7 +408,7 @@ class StockScrap(models.Model):
             return {
                 'type': 'ir.actions.act_window',
                 'name': "Confirmar 'Ubicación Origen'",
-                'res_model': 'overwrite_inventory.button_confirm',
+                'res_model': 'overwrite_inventory.button.confirm',
                 'views': [(view.id, 'form')],
                 'target': 'new',
                 'context': {'scrap': self.id}

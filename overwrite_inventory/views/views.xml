@@ -261,7 +261,7 @@
     </record>
     <record id="button_confirm_form" model="ir.ui.view">
         <field name="name">Confirm Button</field>
-        <field name="model">overwrite_inventory.button_confirm</field>
+        <field name="model">overwrite_inventory.button.confirm</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Confirmar 'Entregar a'">

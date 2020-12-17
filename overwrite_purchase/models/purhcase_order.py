@@ -35,16 +35,13 @@ class PurchaseOrder(models.Model):
 
     def button_confirm(self):
         if self.picking_type_id == self._default_picking_type():
-            value = self.env['overwrite_purchase.button_confirm'].sudo().create([
-            ])
             view = self.env.ref('overwrite_purchase.button_confirm_form')
             return {
                 'type': 'ir.actions.act_window',
                 'name': "Confirmar 'Entregar a'",
-                'res_model': 'overwrite_purchase.button_confirm',
+                'res_model': 'overwrite_purchase.button.confirm',
                 'views': [(view.id, 'form')],
                 'target': 'new',
-                'res_id': value.id,
                 'context': {'purchase': self.id}
             }
         else:
