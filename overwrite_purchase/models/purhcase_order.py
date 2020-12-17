@@ -56,7 +56,7 @@ class PurchaseOrder(models.Model):
                 continue
             order._add_supplier_to_product()
             order.write({'state': 'to approve', 'user_rev': self.env.uid,
-                         'date_rev': datetime.datetime.now()})
+                         'date_rev': datetime.now()})
         return True
 
     def action_view_invoice(self):
