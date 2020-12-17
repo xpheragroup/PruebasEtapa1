@@ -439,6 +439,18 @@ class Picking(models.Model):
         comodel_name='stock.picking', inverse_name='parent_id')
 
     @ api.model
+    def write(self, vals):
+        if vals.get('origin', False):
+            parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split(
+                'Retorno de ')[-1]], ['company_id', '=', self.env.company.id]])
+            if parent:
+                vals['parent_id'] = parent.id
+                vals['company_id'] = parent.company_id.id
+        if not vals.get('origin', False):
+            vals['parent_id'] = False
+        return super(Picking, self).write(vals)
+
+    @ api.model
     def create(self, vals):
         if vals.get('origin', False):
             parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split(
