@@ -24,7 +24,7 @@ class PurchaseOrder(models.Model):
         self.write({'state': "sent"})
         return self.env.ref('overwrite_purchase.report_purchase_quotation').report_action(self)
 
-    def buttom_approve(self):
+    def button_approve(self):
         if not self.is_gift:
             order.write(
                 {'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
