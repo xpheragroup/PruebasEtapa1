@@ -24,11 +24,11 @@ class PurchaseOrder(models.Model):
         self.write({'state': "sent"})
         return self.env.ref('overwrite_purchase.report_purchase_quotation').report_action(self)
 
-    def button_approve(self):
+    def button_approve(self, force=False):
         if not self.is_gift:
             order.write(
                 {'name': self.env['ir.sequence'].next_by_code('purchase.order') or '/'})
-        return super(PurchaseOrder, self).button_approve()
+        return super(PurchaseOrder, self).button_approve(force=force)
 
     def get_taxes(self):
         taxes = {}
