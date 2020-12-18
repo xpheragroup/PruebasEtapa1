@@ -556,7 +556,6 @@ class Picking(models.Model):
                         _('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
 
     def button_validate(self):
-        print(self.partner_id)
         if not self.partner_id:
             products = {}
             for line in self.move_line_ids:
@@ -586,7 +585,7 @@ class Picking(models.Model):
                         'views': [(view.id, 'form')],
                         'target': 'new',
                         'res_id': wiz.id,
-                        'context': {'model': 'stock_picking', 'id': self.id}
+                        'context': {'model': 'stock.picking', 'id': self.id}
                     }
         return self.button_validate_confirm()
 
