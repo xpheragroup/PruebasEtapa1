@@ -556,6 +556,41 @@ class Picking(models.Model):
                         _('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
 
     def button_validate(self):
+        print(self.partner_id)
+        if not self.partner_id:
+            products = {}
+            for line in self.move_line_ids:
+                key = str(line.product_id.id) + '-' + \
+                    str(line.lot_id.id) + '-' + str(line.location_id.id)
+                if products.get(key, False):
+                    products[key] += line.qty_done * \
+                        line.product_uom_id.factor_inv
+                else:
+                    products[key] = line.qty_done * \
+                        line.product_uom_id.factor_inv
+            for key, qty_done in products.items():
+                product, lot, dest = key.split('-')
+                quant = self.env['stock.quant'].search(['&', ['product_id', '=', product], [
+                    'lot_id', '=', lot], ['location_id', '=', dest]])
+                quant_sum = sum(map(lambda q: q.inventory_quantity *
+                                    q.product_uom_id.factor_inv, quant))
+                if quant_sum < qty_done:
+                    view = self.env.ref(
+                        'overwrite_inventory.button_confirm_form_generic')
+                    wiz = self.env['overwrite_inventory.button.confirm.generic'].create(
+                        {'message': 'Las cantidades en la ubicación origen no son suficientes para cubrir la demanda. Confirme para ignorar inventario negativo.'})
+                    return {
+                        'type': 'ir.actions.act_window',
+                        'name': "Confirmar",
+                        'res_model': 'overwrite_inventory.button.confirm.generic',
+                        'views': [(view.id, 'form')],
+                        'target': 'new',
+                        'res_id': wiz.id,
+                        'context': {'model': 'stock_picking', 'id': self.id}
+                    }
+        return self.button_validate_confirm()
+
+    def button_validate_confirm(self):
         self.ensure_one()
 
         self._check_intrawarehouse_moves()

@@ -273,4 +273,18 @@
             </form>
         </field>
     </record>
+    <record id="button_confirm_form_generic" model="ir.ui.view">
+        <field name="name">Confirm Button</field>
+        <field name="model">overwrite_inventory.button.confirm.generic</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Confirmar 'Entregar a'">
+                <field name='message' />
+                <footer>
+                    <button name="button_confirm" string="Confirmar" class="oe_highlight" type="object"/>
+                    <button name="cancel" string="Cancelar" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
 </odoo>
