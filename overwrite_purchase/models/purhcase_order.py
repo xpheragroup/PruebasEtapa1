@@ -39,7 +39,7 @@ class PurchaseOrder(models.Model):
                         (100 - line.discount)/100 * \
                         tax.amount * line.product_qty / 100
                 else:
-                    taxes[tax.name] += line.price_unit * \
+                    taxes[tax.name] = line.price_unit * \
                         (100 - line.discount)/100 * \
                         tax.amount * line.product_qty / 100
         return [(k, v) for k, v in taxes.items()]
