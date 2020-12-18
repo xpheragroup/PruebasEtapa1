@@ -26,13 +26,14 @@ class PurchaseOrder(models.Model):
         for line in self.order_line:
             for tax in line.taxes_id:
                 if taxes.get(tax.name) is None:
-                    taxes[tax.name] += line.price_unit * \
-                        (100 - line.discount)/100 * \
-                        tax.amount * line.product_qty / 100
-                else:
                     taxes[tax.name] = line.price_unit * \
                         (100 - line.discount)/100 * \
                         tax.amount * line.product_qty / 100
+                else:
+                    taxes[tax.name] += line.price_unit * \
+                        (100 - line.discount)/100 * \
+                        tax.amount * line.product_qty / 100
+        print([(k, v) for k, v in taxes.items()])
         return [(k, v) for k, v in taxes.items()]
 
     def action_view_invoice(self):
