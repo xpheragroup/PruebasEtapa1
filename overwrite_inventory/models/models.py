@@ -15,7 +15,7 @@ class Inventory(models.Model):
                                           'Por diferencia'), ('baja', 'Baja de inventario')]
     location_dest_id = fields.Many2one('stock.location', 'Location destiny', check_company=True,
                                        domain="[['scrap_location', '=', True]]",
-                                       index=True, required=True)
+                                       index=True)
     ajuste = fields.Selection(AJUSTES,
                               string='Tipo de ajuste',
                               readonly=True,
