@@ -521,7 +521,7 @@ class Picking(models.Model):
         if vals.get('warehouse_orig', False):
             current_user = self.env['res.users'].browse(self.env.uid)
             warehouse = self.env['stock.warehouse'].search(
-                [['id', '=', vals.get('warehouse_dest')]])
+                [['id', '=', vals.get('warehouse_orig')]])
             responsables = warehouse.user_ids
             if current_user not in responsables:
                 raise UserError(
