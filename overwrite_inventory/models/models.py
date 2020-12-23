@@ -464,7 +464,15 @@ class Picking(models.Model):
     def set_parent(self, vals):
         if vals.get('origin', False):
             parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split(
-                'Retorno de ')[-1]], ['company_id', '=', self.env.company.id]])Ya está casi
+                'Retorno de ')[-1]], ['company_id', '=', self.env.company.id]])
+            if parent:
+                vals['parent_id'] = parent.id
+                vals['company_id'] = parent.company_id.id
+        if not vals.get('origin', False):
+            vals['parent_id'] = False
+
+    @ api.model
+    def write(self, vals):
         vals = self.set_warehouse(vals)
         self.set_parent(vals)
         self._check_intrawarehouse_moves(vals)
@@ -480,7 +488,11 @@ class Picking(models.Model):
     def _check_different_lot_stock_moves(self):
         if self.group_id:
             pickings_on_group = self.env['stock.picking'].search(
-                [['group_id', '=', self.group_id.id], ['state', '=', 'done']])Ya está casi
+                [['group_id', '=', self.group_id.id], ['state', '=', 'done']])
+            if len(pickings_on_group) > 0:
+                move_lot_ids = []
+                move_lot_ids_qty = {}
+                for picking in pickings_on_group:
                     if 'Retorno' in picking.origin:
                         pass
                     for move in picking.move_line_ids_without_package:
@@ -502,7 +514,7 @@ class Picking(models.Model):
                     print()
                     if move_lot_ids_qty.get(key, False):
                         if move.qty_done * move.product_uom_id.factor_inv > move_lot_ids_qty.get(key, False):
-                            raise UserError(_('No se puede realizar un movimiento con mayor cantidad de proYa está casi ducto terminado que en los anteriores movimientos. {}'.format(
+                            raise UserError(_('No se puede realizar un movimiento con mayor cantidad de producto terminado que en los anteriores movimientos. {}'.format(
                                 move.product_id.name)))
 
     def _check_intrawarehouse_moves(self, vals):
@@ -518,14 +530,19 @@ class Picking(models.Model):
     def button_validate(self):
         if not self.partner_id:
             products = {}
-            for line in self.move_line_ids:Ya está casi 
+            for line in self.move_line_ids:
+                key = str(line.product_id.id) + '-' + \
+                    str(line.lot_id.id) + '-' + str(line.location_id.id)
+                if products.get(key, False):
+                    products[key] += line.qty_done * \
+                        line.product_uom_id.factor_inv
                 else:
                     products[key] = line.qty_done * \
                         line.product_uom_id.factor_inv
             for key, qty_done in products.items():
                 product, lot, dest = key.split('-')
                 if lot == 'False':
-                    lot = False
+                    quant_sum = False
                 else:
                     quant = self.env['stock.quant'].search(
                         [['product_id', '=', int(product)], ['lot_id', '=', int(lot)], ['location_id', '=', int(dest)]])
