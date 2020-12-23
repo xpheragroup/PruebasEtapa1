@@ -544,9 +544,9 @@ class Picking(models.Model):
                 product = int(product)
                 dest = int(dest)
                 if lot == 'False':
-                    quant_sum = False
+                    lot = False
                 else:
-                    quant_sum = int(quant_sum)
+                    lot = int(lot)
                 quant = self.env['stock.quant'].search(
                     [['product_id', '=', product], ['lot_id', '=', lot], ['location_id', '=', dest]])
                 quant_sum = sum(map(lambda q: q.quantity *
