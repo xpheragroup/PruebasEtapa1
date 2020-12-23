@@ -541,10 +541,13 @@ class Picking(models.Model):
                         line.product_uom_id.factor_inv
             for key, qty_done in products.items():
                 product, lot, dest = key.split('-')
-                quant = self.env['stock.quant'].search(
-                    [['product_id', '=', int(product)], ['lot_id', '=', int(lot)], ['location_id', '=', int(dest)]])
-                quant_sum = sum(map(lambda q: q.quantity *
-                                    q.product_uom_id.factor_inv, quant))
+                if lot == 'False';
+                    quant_sum = 0
+                else:
+                    quant = self.env['stock.quant'].search(
+                        [['product_id', '=', int(product)], ['lot_id', '=', int(lot)], ['location_id', '=', int(dest)]])
+                    quant_sum = sum(map(lambda q: q.quantity *
+                                        q.product_uom_id.factor_inv, quant))
                 if quant_sum < qty_done:
                     view = self.env.ref(
                         'overwrite_inventory.button_confirm_form_generic')
