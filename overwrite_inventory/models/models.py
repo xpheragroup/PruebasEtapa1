@@ -489,7 +489,7 @@ class Picking(models.Model):
         if self.group_id:
             pickings_on_group = self.env['stock.picking'].search(
                 [['group_id', '=', self.group_id.id], ['state', '=', 'done']])
-            if len(pickings_on_group) > 0:
+            if len(pickings_on_group) > 0 and self.backorder_id == False:
                 move_lot_ids = []
                 move_lot_ids_qty = {}
                 for picking in pickings_on_group:
