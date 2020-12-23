@@ -448,7 +448,7 @@ class Picking(models.Model):
             current = current.location_id
         warehouse = self.env['stock.warehouse'].search(
             [['code', '=', current.complete_name]])
-        return warehouseYa está casi
+        return warehouse
 
     def set_warehouse(self, vals):
         if vals.get('location_id', False):
