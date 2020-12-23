@@ -471,20 +471,6 @@ class Picking(models.Model):
         if not vals.get('origin', False):
             vals['parent_id'] = False
 
-    @ api.model
-    def write(self, vals):
-        vals = self.set_warehouse(vals)
-        self.set_parent(vals)
-        self._check_intrawarehouse_moves(vals)
-        return super(Picking, self).write(vals)
-
-    @ api.model
-    def create(self, vals):
-        vals = self.set_warehouse(vals)
-        self.set_parent(vals)
-        self._check_intrawarehouse_moves(vals)
-        return super(Picking, self).create(vals)
-
     def _check_different_lot_stock_moves(self):
         if self.group_id:
             pickings_on_group = self.env['stock.picking'].search(
