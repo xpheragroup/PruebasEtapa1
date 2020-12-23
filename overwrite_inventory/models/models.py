@@ -438,8 +438,30 @@ class Picking(models.Model):
     children_ids = fields.One2many(
         comodel_name='stock.picking', inverse_name='parent_id')
 
-    @ api.model
-    def write(self, vals):
+    warehouse_orig = fields.Many2one(comodel_name='stock.warehouse')
+    warehouse_dest = fields.Many2one(comodel_name='stock.warehouse')
+
+    def get_root_warehouse(self, location_id):
+        stock_location = self.env['stock.location']
+        current = stock_location.search([['id', '=', location_id]])
+        while current.location_id and current.location_id.location_id:
+            current = current.location_id
+        warehouse = self.env['stock.warehouse'].search(
+            [['code', '=', current.complete_name]])
+        return warehouse
+
+    def set_warehouse(self, vals):
+        if vals.get('location_id', False):
+            warehouse_orig = self.get_root_warehouse(vals['location_id'])
+            if warehouse_orig:
+                vals['warehouse_orig'] = warehouse_orig.id
+        if vals.get('location_dest_id', False):
+            warehouse_dest = self.get_root_warehouse(vals['location_dest_id'])
+            if warehouse_dest:
+                vals['warehouse_dest'] = warehouse_dest.id
+        return vals
+
+    def set_parent(self, vals):
         if vals.get('origin', False):
             parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split(
                 'Retorno de ')[-1]], ['company_id', '=', self.env.company.id]])
@@ -448,16 +470,19 @@ class Picking(models.Model):
                 vals['company_id'] = parent.company_id.id
         if not vals.get('origin', False):
             vals['parent_id'] = False
+
+    @ api.model
+    def write(self, vals):
+        vals = self.set_warehouse(vals)
+        self.set_parent(vals)
+        self._check_intrawarehouse_moves(vals)
         return super(Picking, self).write(vals)
 
     @ api.model
     def create(self, vals):
-        if vals.get('origin', False):
-            parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split(
-                'Retorno de ')[-1]], ['company_id', '=', self.env.company.id]])
-            if parent:
-                vals['parent_id'] = parent.id
-                vals['company_id'] = parent.company_id.id
+        vals = self.set_warehouse(vals)
+        self.set_parent(vals)
+        self._check_intrawarehouse_moves(vals)
         return super(Picking, self).create(vals)
 
     def _check_different_lot_stock_moves(self):
@@ -492,28 +517,15 @@ class Picking(models.Model):
                             raise UserError(_('No se puede realizar un movimiento con mayor cantidad de producto terminado que en los anteriores movimientos. {}'.format(
                                 move.product_id.name)))
 
-    def _check_intrawarehouse_moves(self):
-        def get_root_parent(location):
-            current = location
-            while current.location_id and current.location_id.location_id:
-                current = current.location_id
-            return current
-
-        if self.location_dest_id and self.location_id:
-            warehouse_org_name = get_root_parent(
-                self.location_id).complete_name
-            warehouse_dest_name = get_root_parent(
-                self.location_dest_id).complete_name
-            warehouse_dest = self.env['stock.warehouse'].search(
-                [['code', '=', warehouse_dest_name]])
-            warehouse_org = self.env['stock.warehouse'].search(
-                [['code', '=', warehouse_org_name]])
-            if warehouse_org_name != warehouse_dest_name and warehouse_dest and warehouse_org:
-                current_user = self.env['res.users'].browse(self.env.uid)
-                responsables = warehouse_dest.user_ids
-                if current_user not in responsables:
-                    raise UserError(
-                        _('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
+    def _check_intrawarehouse_moves(self, vals):
+        if vals.get('warehouse_dest', False):
+            current_user = self.env['res.users'].browse(self.env.uid)
+            warehouse = self.env['stock.warehouse'].search(
+                [['id', '=', vals.get('warehouse_dest')]])
+            responsables = warehouse.user_ids
+            if current_user not in responsables:
+                raise UserError(
+                    _('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
 
     def button_validate(self):
         if not self.partner_id:
@@ -529,8 +541,8 @@ class Picking(models.Model):
                         line.product_uom_id.factor_inv
             for key, qty_done in products.items():
                 product, lot, dest = key.split('-')
-                quant = self.env['stock.quant'].search(['&', ['product_id', '=', product], [
-                    'lot_id', '=', lot], ['location_id', '=', dest]])
+                quant = self.env['stock.quant'].search(
+                    [['product_id', '=', int(product)], ['lot_id', '=', int(lot)], ['location_id', '=', int(dest)]])
                 quant_sum = sum(map(lambda q: q.quantity *
                                     q.product_uom_id.factor_inv, quant))
                 if quant_sum < qty_done:
@@ -551,8 +563,6 @@ class Picking(models.Model):
 
     def button_validate_confirm(self):
         self.ensure_one()
-
-        self._check_intrawarehouse_moves()
 
         if not self.env['mrp.production'].search([['name', '=', self.origin]]):
             self._check_different_lot_stock_moves()
