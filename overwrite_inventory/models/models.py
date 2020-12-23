@@ -518,7 +518,7 @@ class Picking(models.Model):
                                 move.product_id.name)))
 
     def _check_intrawarehouse_moves(self, vals):
-        if vals.get('warehouse_dest', False):
+        if vals.get('warehouse_orig', False):
             current_user = self.env['res.users'].browse(self.env.uid)
             warehouse = self.env['stock.warehouse'].search(
                 [['id', '=', vals.get('warehouse_dest')]])
