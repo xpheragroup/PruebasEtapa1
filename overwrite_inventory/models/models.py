@@ -541,7 +541,7 @@ class Picking(models.Model):
                         line.product_uom_id.factor_inv
             for key, qty_done in products.items():
                 product, lot, dest = key.split('-')
-                if lot == 'False';
+                if lot == 'False':
                     quant_sum = 0
                 else:
                     quant = self.env['stock.quant'].search(
