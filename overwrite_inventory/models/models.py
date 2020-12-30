@@ -434,12 +434,30 @@ class StockWarnInsufficientQtyScrapOver(models.TransientModel):
 class Picking(models.Model):
     _inherit = 'stock.picking'
 
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('waiting', 'Waiting Another Operation'),
+        ('confirmed', 'Waiting'),
+        ('assigned', 'Ready'),
+        ('approved', 'Aprobado'),
+        ('done', 'Done'),
+        ('cancel', 'Cancelled')])
+
+    location_id_usage = fields.Selection(related='location_id.usage')
+    location_dest_id_usage = fields.Selection(related='location_dest_id.usage')
+
     parent_id = fields.Many2one(comodel_name='stock.picking')
     children_ids = fields.One2many(
         comodel_name='stock.picking', inverse_name='parent_id')
 
     warehouse_orig = fields.Many2one(comodel_name='stock.warehouse')
     warehouse_dest = fields.Many2one(comodel_name='stock.warehouse')
+
+    user_apprv = fields.Many2one('res.users', string='Aprobó', required=False)
+    date_apprv = fields.Datetime(string='Fecha aprobó')
+
+    user_val = fields.Many2one('res.users', string='Validó', required=False)
+    date_val = fields.Datetime(string='Fecha validó')
 
     def get_root_warehouse(self, location_id):
         stock_location = self.env['stock.location']
@@ -449,6 +467,16 @@ class Picking(models.Model):
         warehouse = self.env['stock.warehouse'].search(
             [['code', '=', current.complete_name]])
         return warehouse
+
+    @api.depends('state', 'is_locked')
+    def _compute_show_validate(self):
+        for picking in self:
+            if not (picking.immediate_transfer) and picking.state == 'draft':
+                picking.show_validate = False
+            elif picking.state not in ('draft', 'approved', 'waiting', 'confirmed', 'assigned') or not picking.is_locked:
+                picking.show_validate = False
+            else:
+                picking.show_validate = True
 
     def set_warehouse(self, vals):
         if vals.get('location_id', False):
@@ -567,6 +595,20 @@ class Picking(models.Model):
                     }
         return self.button_validate_confirm()
 
+    def button_unapprove(self):
+        for picking in self:
+            picking.write({'state': 'assigned',
+                           'user_apprv': False,
+                           'date_apprv': False})
+        return True
+
+    def button_approve(self):
+        for picking in self:
+            picking.write({'state': 'approved',
+                           'user_apprv': self.env.uid,
+                           'date_apprv': datetime.datetime.now()})
+        return True
+
     def button_validate_confirm(self):
         self.ensure_one()
 
@@ -659,6 +701,8 @@ class Picking(models.Model):
         if self._check_backorder():
             return self.action_generate_backorder_wizard()
         self.action_done()
+        self.write({'user_val': self.env.uid,
+                    'date_val': datetime.datetime.now()})
         return
 
 

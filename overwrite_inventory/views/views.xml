@@ -287,4 +287,44 @@
             </form>
         </field>
     </record>
+    <record id="view_stock_picking_form_inherit" model="ir.ui.view">
+        <field name="name">stock.picking.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" widget="statusbar" statusbar_visible="draft,approved,confirmed,partially_available,assigned,done" />
+            </xpath>
+            <xpath expr="//button[@name='button_validate'][1]" position="replace">
+                <button name="button_validate" attrs="{'invisible': ['|',('state', '!=', 'approved'), ('show_validate', '=', False)]}" string="VALIDAR" type="object" groups="stock.group_stock_user" class="oe_highlight"/>
+            </xpath>
+            <xpath expr="//button[@name='button_validate'][2]" position="replace">
+                
+            </xpath>
+            <xpath expr="//button[@name='button_validate']" position="after">
+                <button name="button_approve" attrs="{'invisible': ['|', '|', ('state', '!=', 'assigned'), ('location_id_usage', '=', 'transit'), ('location_dest_id_usage', '=', 'transit')]}" string="Aprobar" type="object" class="oe_highlight" groups="overwrite_inventory.interinventory_user"/>
+                <button name="button_approve" attrs="{'invisible': [('state', '!=', 'assigned')]}" string="Aprobar" type="object" class="oe_highlight" groups="overwrite_inventory.interinventory_manager"/>
+
+                <button name="button_unapprove" attrs="{'invisible': ['|', '|', ('state', '!=', 'approved'), ('location_id_usage', '=', 'transit'), ('location_dest_id_usage', '=', 'transit')]}" string="A borrador" type="object" groups="overwrite_inventory.interinventory_user"/>
+                <button name="button_unapprove" attrs="{'invisible': [('state', '!=', 'approved')]}" string="A borrador" type="object" groups="overwrite_inventory.interinventory_manager"/>
+            </xpath>
+            <xpath expr="//field[@name='backorder_id']" position="after">
+                <field name="location_id_usage" attrs="{'invisible': True}"/>
+                <field name="location_dest_id_usage" attrs="{'invisible': True}"/>
+            </xpath>
+        </field>
+    </record>
+    <record model="ir.module.category" id="module_management">
+        <field name="name">Movimiento Almacen</field>
+        <field name="description">Aprobación movimiento de almacen</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="interinventory_user" model="res.groups">
+        <field name="name">Usuario</field>
+        <field name="category_id" ref="module_management"/>
+    </record>
+    <record id="interinventory_manager" model="res.groups">
+        <field name="name">Administrador</field>
+        <field name="category_id" ref="module_management"/>
+    </record>
 </odoo>
