@@ -302,10 +302,10 @@
                 
             </xpath>
             <xpath expr="//button[@name='button_validate']" position="after">
-                <button name="button_approve" attrs="{'invisible': ['|', '|', ('state', '!=', 'assigned'), ('location_id_usage', '=', 'transit'), ('location_dest_id_usage', '=', 'transit')]}" string="Aprobar" type="object" class="oe_highlight" groups="overwrite_inventory.interinventory_user"/>
+                <button name="button_approve" attrs="{'invisible': ['|', '|', ('state', '!=', 'assigned'), ('location_id_usage', '=', 'interwarehouse'), ('location_dest_id_usage', '=', 'interwarehouse')]}" string="Aprobar" type="object" class="oe_highlight" groups="overwrite_inventory.interinventory_user"/>
                 <button name="button_approve" attrs="{'invisible': [('state', '!=', 'assigned')]}" string="Aprobar" type="object" class="oe_highlight" groups="overwrite_inventory.interinventory_manager"/>
 
-                <button name="button_unapprove" attrs="{'invisible': ['|', '|', ('state', '!=', 'approved'), ('location_id_usage', '=', 'transit'), ('location_dest_id_usage', '=', 'transit')]}" string="A borrador" type="object" groups="overwrite_inventory.interinventory_user"/>
+                <button name="button_unapprove" attrs="{'invisible': ['|', '|', ('state', '!=', 'approved'), ('location_id_usage', '=', 'interwarehouse'), ('location_dest_id_usage', '=', 'interwarehouse')]}" string="A borrador" type="object" groups="overwrite_inventory.interinventory_user"/>
                 <button name="button_unapprove" attrs="{'invisible': [('state', '!=', 'approved')]}" string="A borrador" type="object" groups="overwrite_inventory.interinventory_manager"/>
             </xpath>
             <xpath expr="//field[@name='backorder_id']" position="after">

@@ -727,3 +727,17 @@ class StockValuationLayer(models.Model):
 
     _inherit = 'stock.valuation.layer'
     categ_id = fields.Many2one(store=True)
+
+
+class StockValuationLayer(models.Model):
+
+    _inherit = 'stock.location'
+    usage = fields.Selection([
+        ('supplier', 'Vendor Location'),
+        ('view', 'View'),
+        ('internal', 'Internal Location'),
+        ('customer', 'Customer Location'),
+        ('inventory', 'Inventory Loss'),
+        ('production', 'Production'),
+        ('transit', 'Transit Location'),
+        ('interwarehouse', 'Interalmacen')])
