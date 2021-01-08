@@ -2,13 +2,18 @@
 import datetime
 from odoo import models
 
-class PurchaseOrder(models.Model):
-    _inherit = 'purchase.order'                                             # Inherit Purchase Requisition
 
-    def copy(self, default=None):                                           # Redefininf copy funcion
+class PurchaseOrder(models.Model):
+    # Inherit Purchase Requisition
+    _inherit = 'purchase.order'
+
+    # Redefininf copy funcion
+    def copy(self, default=None):
         default = dict(default or {})
+        current_user = self._uid
+        far_future_date = datetime.datetime(year=2220, month=1, day=1)
         default.update({
-            'user_id': self._uid,                                           # Getting current user on copy action
-            'date_planned': datetime.datetime(year=2220, month=1, day=1)    # Setting planned date to far future to avoid errors
-        })  
+            'user_id': current_user,
+            'date_planned': far_future_date
+        })
         return super(PurchaseOrder, self).copy(default)
