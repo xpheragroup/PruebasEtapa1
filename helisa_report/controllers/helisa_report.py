@@ -6,15 +6,15 @@ from odoo import http
 from odoo.http import request
 from odoo.addons.web.controllers.main import serialize_exception, content_disposition
 
+INITIAL_ROW = 0
+INCREMENT_ROW = 1
+COLUMN_COUNT = 10
+COLUMN_WIDTH = 7500
+FILE_EXTENSION = '.xls'
+DEFAULT_FILENAME = 'Helisa.xls'
+
 
 class Binary(http.Controller):
-
-    INITIAL_ROW = 0
-    INCREMENT_ROW = 1
-    COLUMN_COUNT = 10
-    COLUMN_WIDTH = 7500
-    FILE_EXTENSION = '.xls'
-    DEFAULT_FILENAME = 'Helisa.xls'
 
     def _init_book(self):
         self.current_row = INITIAL_ROW
@@ -48,7 +48,7 @@ class Binary(http.Controller):
                     'FC',
                     account_move.invoice_date or '',
                     account_move.partner_id.vat or '',
-                    detail.debit if detail.debit > 0 else detail.credit,
+                    invoice_line.debit if invoice_line.debit > 0 else invoice_line.credit,
                     'D' if invoice_line.debit > 0 else 'C',
                     invoice_line.analytic_account_id.name or '',
                     invoice_line.account_id.code,
@@ -64,8 +64,8 @@ class Binary(http.Controller):
         model = http.request.env['account.move']
         account_moves = model.browse(ast.literal_eval(ids))
 
-        if res:
-            _write_sheet(account_moves)
+        if account_moves:
+            self._write_sheet(account_moves)
             filecontent = self._finish_book()
             if not filename:
                 filename = DEFAULT_FILENAME
