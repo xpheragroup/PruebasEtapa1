@@ -13,6 +13,9 @@ class Inventory(models.Model):
 
     AJUSTES = [('conteo', 'Por conteo'), ('diferencia',
                                           'Por diferencia'), ('baja', 'Baja de inventario')]
+    location_dest_id = fields.Many2one('stock.location', 'Location destiny', check_company=True,
+                                       domain="[['scrap_location', '=', True]]",
+                                       index=True)
     ajuste = fields.Selection(AJUSTES,
                               string='Tipo de ajuste',
                               readonly=True,
@@ -186,27 +189,27 @@ class InventoryLine(models.Model):
     disposicion_final = fields.Char()
     fecha_disposicion_final = fields.Date()
 
-    @api.depends('costo', 'perdida')
+    @ api.depends('costo', 'perdida')
     def _compute_lost(self):
         for line in self:
             line.total_perdida = line.costo * line.perdida
 
-    @api.onchange('perdida')
+    @ api.onchange('perdida')
     def update_quantity_by_perdida(self):
         for line in self:
             line.product_qty = line.theoretical_qty - line.perdida
 
-    @api.onchange('difference_qty_2')
+    @ api.onchange('difference_qty_2')
     def update_quantity_by_difference(self):
         for line in self:
             line.product_qty = line.theoretical_qty + line.difference_qty_2
 
-    @api.onchange('product_qty')
+    @ api.onchange('product_qty')
     def update_showed_quantity(self):
         for line in self:
             line.showed_qty = line.product_qty
 
-    @api.onchange('product_id', 'location_id', 'product_uom_id', 'prod_lot_id', 'partner_id', 'package_id')
+    @ api.onchange('product_id', 'location_id', 'product_uom_id', 'prod_lot_id', 'partner_id', 'package_id')
     def _onchange_quantity_context(self):
         product_qty = False
         if self.product_id:
@@ -237,6 +240,12 @@ class InventoryLine(models.Model):
             # avoid to reset quantity when user manually set it.
             self.product_qty = theoretical_qty + self.difference_qty_2
         self.theoretical_qty = theoretical_qty
+
+    def _get_virtual_location(self):
+        if self.inventory_id.ajuste == 'baja':
+            return self.inventory_id.location_dest_id
+        else:
+            return self.product_id.with_context(force_company=self.company_id.id).property_stock_inventory
 
 
 class StockScrap(models.Model):
@@ -394,6 +403,21 @@ class StockScrap(models.Model):
 
     def action_validate(self):
         self.ensure_one()
+        if self.location_id.id == self._get_default_location_id():
+            view = self.env.ref('overwrite_inventory.button_confirm_form')
+            return {
+                'type': 'ir.actions.act_window',
+                'name': "Confirmar 'Ubicación Origen'",
+                'res_model': 'overwrite_inventory.button.confirm',
+                'views': [(view.id, 'form')],
+                'target': 'new',
+                'context': {'scrap': self.id}
+            }
+        else:
+            return self.do_scrap()
+
+    def action_validate_second_confirm(self):
+        self.ensure_one()
         return self.do_scrap()
 
 
@@ -410,65 +434,90 @@ class StockWarnInsufficientQtyScrapOver(models.TransientModel):
 class Picking(models.Model):
     _inherit = 'stock.picking'
 
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('waiting', 'Waiting Another Operation'),
+        ('confirmed', 'Waiting'),
+        ('assigned', 'Ready'),
+        ('approved', 'Aprobado'),
+        ('done', 'Done'),
+        ('cancel', 'Cancelled')])
+
+    location_id_usage = fields.Selection(related='location_id.usage')
+    location_dest_id_usage = fields.Selection(related='location_dest_id.usage')
+
     parent_id = fields.Many2one(comodel_name='stock.picking')
     children_ids = fields.One2many(
         comodel_name='stock.picking', inverse_name='parent_id')
 
-    @api.model
-    def create(self, vals):
+    warehouse_orig = fields.Many2one(comodel_name='stock.warehouse')
+    warehouse_dest = fields.Many2one(comodel_name='stock.warehouse')
+
+    user_apprv = fields.Many2one('res.users', string='Aprobó', required=False)
+    date_apprv = fields.Datetime(string='Fecha aprobó')
+
+    user_val = fields.Many2one('res.users', string='Validó', required=False)
+    date_val = fields.Datetime(string='Fecha validó')
+
+    def get_root_warehouse(self, location_id):
+        stock_location = self.env['stock.location']
+        current = stock_location.search([['id', '=', location_id]])
+        while current.location_id and current.location_id.location_id:
+            current = current.location_id
+        warehouse = self.env['stock.warehouse'].search(
+            [['code', '=', current.complete_name]])
+        return warehouse
+
+    @api.depends('state', 'is_locked')
+    def _compute_show_validate(self):
+        for picking in self:
+            if not (picking.immediate_transfer) and picking.state == 'draft':
+                picking.show_validate = False
+            elif picking.state not in ('draft', 'approved', 'waiting', 'confirmed', 'assigned') or not picking.is_locked:
+                picking.show_validate = False
+            else:
+                picking.show_validate = True
+
+    def set_warehouse(self, vals):
+        if vals.get('location_id', False):
+            warehouse_orig = self.get_root_warehouse(vals['location_id'])
+            if warehouse_orig:
+                vals['warehouse_orig'] = warehouse_orig.id
+        if vals.get('location_dest_id', False):
+            warehouse_dest = self.get_root_warehouse(vals['location_dest_id'])
+            if warehouse_dest:
+                vals['warehouse_dest'] = warehouse_dest.id
+        return vals
+
+    def set_parent(self, vals):
         if vals.get('origin', False):
             parent = self.env['stock.picking'].search(['&', ['name', '=', vals['origin'].split(
                 'Retorno de ')[-1]], ['company_id', '=', self.env.company.id]])
             if parent:
                 vals['parent_id'] = parent.id
                 vals['company_id'] = parent.company_id.id
+        if not vals.get('origin', False):
+            vals['parent_id'] = False
 
-        defaults = self.default_get(['name', 'picking_type_id'])
-        picking_type = self.env['stock.picking.type'].browse(
-            vals.get('picking_type_id', defaults.get('picking_type_id')))
-        if vals.get('name', '/') == '/' and defaults.get('name', '/') == '/' and vals.get('picking_type_id', defaults.get('picking_type_id')):
-            if picking_type.sequence_id:
-                vals['name'] = picking_type.sequence_id.next_by_id()
+    @ api.model
+    def write(self, vals):
+        vals = self.set_warehouse(vals)
+        self.set_parent(vals)
+        self._check_intrawarehouse_moves(vals)
+        return super(Picking, self).write(vals)
 
-        # As the on_change in one2many list is WIP, we will overwrite the locations on the stock moves here
-        # As it is a create the format will be a list of (0, 0, dict)
-        moves = vals.get('move_lines', []) + \
-            vals.get('move_ids_without_package', [])
-        if moves and vals.get('location_id') and vals.get('location_dest_id'):
-            for move in moves:
-                if len(move) == 3 and move[0] == 0:
-                    move[2]['location_id'] = vals['location_id']
-                    move[2]['location_dest_id'] = vals['location_dest_id']
-                    # When creating a new picking, a move can have no `company_id` (create before
-                    # picking type was defined) or a different `company_id` (the picking type was
-                    # changed for an another company picking type after the move was created).
-                    # So, we define the `company_id` in one of these cases.
-                    picking_type = self.env['stock.picking.type'].browse(
-                        vals['picking_type_id'])
-                    if 'picking_type_id' not in move[2] or move[2]['picking_type_id'] != picking_type.id:
-                        move[2]['picking_type_id'] = picking_type.id
-                        move[2]['company_id'] = picking_type.company_id.id
-        # make sure to write `schedule_date` *after* the `stock.move` creation in
-        # order to get a determinist execution of `_set_scheduled_date`
-        scheduled_date = vals.pop('scheduled_date', False)
-        res = super(Picking, self).create(vals)
-        if scheduled_date:
-            res.with_context(mail_notrack=True).write(
-                {'scheduled_date': scheduled_date})
-        res._autoconfirm_picking()
-
-        # set partner as follower
-        if vals.get('partner_id'):
-            for picking in res.filtered(lambda p: p.location_id.usage == 'supplier' or p.location_dest_id.usage == 'customer'):
-                picking.message_subscribe([vals.get('partner_id')])
-
-        return res
+    @ api.model
+    def create(self, vals):
+        vals = self.set_warehouse(vals)
+        self.set_parent(vals)
+        self._check_intrawarehouse_moves(vals)
+        return super(Picking, self).create(vals)
 
     def _check_different_lot_stock_moves(self):
         if self.group_id:
             pickings_on_group = self.env['stock.picking'].search(
                 [['group_id', '=', self.group_id.id], ['state', '=', 'done']])
-            if len(pickings_on_group) > 0:
+            if len(pickings_on_group) > 0 and self.backorder_id == False:
                 move_lot_ids = []
                 move_lot_ids_qty = {}
                 for picking in pickings_on_group:
@@ -490,38 +539,78 @@ class Picking(models.Model):
                         raise UserError(_('No se puede agregar lotes no existentes en movimientos terminados anteriores. {}'.format(
                             move.product_id.name)))
                     print(move.qty_done * move.product_uom_id.factor_inv)
-                    print(move_lot_ids_qty.get(key, False))
-                    if move.qty_done * move.product_uom_id.factor_inv > move_lot_ids_qty.get(key, False):
-                        raise UserError(_('No se puede realizar un movimiento con mayor cantidad de producto terminado que en los anteriores movimientos. {}'.format(
-                            move.product_id.name)))
+                    print()
+                    if move_lot_ids_qty.get(key, False):
+                        if move.qty_done * move.product_uom_id.factor_inv > move_lot_ids_qty.get(key, False):
+                            raise UserError(_('No se puede realizar un movimiento con mayor cantidad de producto terminado que en los anteriores movimientos. {}'.format(
+                                move.product_id.name)))
 
-    def _check_intrawarehouse_moves(self):
-        def get_root_parent(location):
-            current = location
-            while current.location_id and current.location_id.location_id:
-                current = current.location_id
-            return current
-
-        if self.location_dest_id and self.location_id:
-            warehouse_org_name = get_root_parent(
-                self.location_id).complete_name
-            warehouse_dest_name = get_root_parent(
-                self.location_dest_id).complete_name
-            warehouse_dest = self.env['stock.warehouse'].search(
-                [['code', '=', warehouse_dest_name]])
-            warehouse_org = self.env['stock.warehouse'].search(
-                [['code', '=', warehouse_org_name]])
-            if warehouse_org_name != warehouse_dest_name and warehouse_dest and warehouse_org:
-                current_user = self.env['res.users'].browse(self.env.uid)
-                responsables = warehouse_dest.user_ids
-                if current_user not in responsables:
-                    raise UserError(
-                        _('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
+    def _check_intrawarehouse_moves(self, vals):
+        if vals.get('warehouse_orig', False):
+            current_user = self.env['res.users'].browse(self.env.uid)
+            warehouse = self.env['stock.warehouse'].search(
+                [['id', '=', vals.get('warehouse_orig')]])
+            responsables = warehouse.user_ids
+            if current_user not in responsables:
+                raise UserError(
+                    _('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
 
     def button_validate(self):
-        self.ensure_one()
+        if not self.partner_id:
+            products = {}
+            for line in self.move_line_ids:
+                key = str(line.product_id.id) + '-' + \
+                    str(line.lot_id.id) + '-' + str(line.location_id.id)
+                if products.get(key, False):
+                    products[key] += line.qty_done * \
+                        line.product_uom_id.factor_inv
+                else:
+                    products[key] = line.qty_done * \
+                        line.product_uom_id.factor_inv
+            for key, qty_done in products.items():
+                product, lot, dest = key.split('-')
+                product = int(product)
+                dest = int(dest)
+                if lot == 'False':
+                    lot = False
+                else:
+                    lot = int(lot)
+                quant = self.env['stock.quant'].search(
+                    [['product_id', '=', product], ['lot_id', '=', lot], ['location_id', '=', dest]])
+                quant_sum = sum(map(lambda q: q.quantity *
+                                    q.product_uom_id.factor_inv, quant))
+                if quant_sum < qty_done:
+                    view = self.env.ref(
+                        'overwrite_inventory.button_confirm_form_generic')
+                    wiz = self.env['overwrite_inventory.button.confirm.generic'].create(
+                        {'message': 'Las cantidades en la ubicación origen no son suficientes para cubrir la demanda. Confirme para ignorar inventario negativo.'})
+                    return {
+                        'type': 'ir.actions.act_window',
+                        'name': "Confirmar",
+                        'res_model': 'overwrite_inventory.button.confirm.generic',
+                        'views': [(view.id, 'form')],
+                        'target': 'new',
+                        'res_id': wiz.id,
+                        'context': {'model': 'stock.picking', 'id': self.id}
+                    }
+        return self.button_validate_confirm()
 
-        self._check_intrawarehouse_moves()
+    def button_unapprove(self):
+        for picking in self:
+            picking.write({'state': 'assigned',
+                           'user_apprv': False,
+                           'date_apprv': False})
+        return True
+
+    def button_approve(self):
+        for picking in self:
+            picking.write({'state': 'approved',
+                           'user_apprv': self.env.uid,
+                           'date_apprv': datetime.datetime.now()})
+        return True
+
+    def button_validate_confirm(self):
+        self.ensure_one()
 
         if not self.env['mrp.production'].search([['name', '=', self.origin]]):
             self._check_different_lot_stock_moves()
@@ -612,6 +701,8 @@ class Picking(models.Model):
         if self._check_backorder():
             return self.action_generate_backorder_wizard()
         self.action_done()
+        self.write({'user_val': self.env.uid,
+                    'date_val': datetime.datetime.now()})
         return
 
 
@@ -622,120 +713,31 @@ class Warehouse(models.Model):
     user_ids = fields.Many2many('res.users', string='Responsables')
 
 
-class StockMoveLine(models.Model):
-    _inherit = "stock.move.line"
+class ProductCategory(models.Model):
+    _inherit = 'product.category'
 
-    # Action done takes into account uom
-    def _action_done(self):
-        """ This method is called during a move's `action_done`. It'll actually move a quant from
-        the source location to the destination location, and unreserve if needed in the source
-        location.
+    company_id = fields.Many2one(
+        'res.company',
+        'Company',
+        ondelete='cascade',
+    )
 
-        This method is intended to be called on all the move lines of a move. This method is not
-        intended to be called when editing a `done` move (that's what the override of `write` here
-        is done.
-        """
-        Quant = self.env['stock.quant']
 
-        # First, we loop over all the move lines to do a preliminary check: `qty_done` should not
-        # be negative and, according to the presence of a picking type or a linked inventory
-        # adjustment, enforce some rules on the `lot_id` field. If `qty_done` is null, we unlink
-        # the line. It is mandatory in order to free the reservation and correctly apply
-        # `action_done` on the next move lines.
-        ml_to_delete = self.env['stock.move.line']
-        for ml in self:
-            # Check here if `ml.qty_done` respects the rounding of `ml.product_uom_id`.
-            uom_qty = float_round(
-                ml.qty_done, precision_rounding=ml.product_uom_id.rounding, rounding_method='HALF-UP')
-            precision_digits = self.env['decimal.precision'].precision_get(
-                'Product Unit of Measure')
-            qty_done = float_round(
-                ml.qty_done, precision_digits=precision_digits, rounding_method='HALF-UP')
-            if float_compare(uom_qty, qty_done, precision_digits=precision_digits) != 0:
-                raise UserError(_('The quantity done for the product "%s" doesn\'t respect the rounding precision \
-                                  defined on the unit of measure "%s". Please change the quantity done or the \
-                                  rounding precision of your unit of measure.') % (ml.product_id.display_name, ml.product_uom_id.name))
+class StockValuationLayer(models.Model):
 
-            qty_done_float_compared = float_compare(
-                ml.qty_done, 0, precision_rounding=ml.product_uom_id.rounding)
-            if qty_done_float_compared > 0:
-                if ml.product_id.tracking != 'none':
-                    picking_type_id = ml.move_id.picking_type_id
-                    if picking_type_id:
-                        if picking_type_id.use_create_lots:
-                            # If a picking type is linked, we may have to create a production lot on
-                            # the fly before assigning it to the move line if the user checked both
-                            # `use_create_lots` and `use_existing_lots`.
-                            if ml.lot_name and not ml.lot_id:
-                                lot = self.env['stock.production.lot'].create(
-                                    {'name': ml.lot_name, 'product_id': ml.product_id.id,
-                                        'company_id': ml.move_id.company_id.id}
-                                )
-                                ml.write({'lot_id': lot.id})
-                        elif not picking_type_id.use_create_lots and not picking_type_id.use_existing_lots:
-                            # If the user disabled both `use_create_lots` and `use_existing_lots`
-                            # checkboxes on the picking type, he's allowed to enter tracked
-                            # products without a `lot_id`.
-                            continue
-                    elif ml.move_id.inventory_id:
-                        # If an inventory adjustment is linked, the user is allowed to enter
-                        # tracked products without a `lot_id`.
-                        continue
+    _inherit = 'stock.valuation.layer'
+    categ_id = fields.Many2one(store=True)
 
-                    if not ml.lot_id:
-                        raise UserError(
-                            _('You need to supply a Lot/Serial number for product %s.') % ml.product_id.display_name)
-            elif qty_done_float_compared < 0:
-                raise UserError(_('No negative quantities allowed'))
-            else:
-                ml_to_delete |= ml
-        ml_to_delete.unlink()
 
-        (self - ml_to_delete)._check_company()
+class StockValuationLayer(models.Model):
 
-        # Now, we can actually move the quant.
-        done_ml = self.env['stock.move.line']
-        for ml in self - ml_to_delete:
-            if ml.product_id.type == 'product':
-                rounding = ml.product_uom_id.rounding
-
-                # if this move line is force assigned, unreserve elsewhere if needed
-                if not ml._should_bypass_reservation(ml.location_id) and float_compare(ml.qty_done, ml.product_uom_qty, precision_rounding=rounding) > 0:
-                    qty_done_product_uom = ml.product_uom_id._compute_quantity(
-                        ml.qty_done, ml.product_id.uom_id, rounding_method='HALF-UP')
-                    extra_qty = qty_done_product_uom - ml.product_qty
-                    ml._free_reservation(ml.product_id, ml.location_id, extra_qty, lot_id=ml.lot_id,
-                                         package_id=ml.package_id, owner_id=ml.owner_id, ml_to_ignore=done_ml)
-                # unreserve what's been reserved
-                if not ml._should_bypass_reservation(ml.location_id) and ml.product_id.type == 'product' and ml.product_qty:
-                    try:
-                        Quant._update_reserved_quantity(ml.product_id, ml.location_id, -ml.product_qty * ml.product_uom_id.factor *
-                                                        ml.product_id.uom_id.factor_inv, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id, strict=True)
-                    except UserError:
-                        Quant._update_reserved_quantity(ml.product_id, ml.location_id, -ml.product_qty * ml.product_uom_id.factor *
-                                                        ml.product_id.uom_id.factor_inv, lot_id=False, package_id=ml.package_id, owner_id=ml.owner_id, strict=True)
-
-                # move what's been actually done
-                quantity = ml.product_uom_id._compute_quantity(
-                    ml.qty_done, ml.move_id.product_id.uom_id, rounding_method='HALF-UP')
-                available_qty, in_date = Quant._update_available_quantity(
-                    ml.product_id, ml.location_id, -quantity, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id)
-                if available_qty < 0 and ml.lot_id:
-                    # see if we can compensate the negative quants with some untracked quants
-                    untracked_qty = Quant._get_available_quantity(
-                        ml.product_id, ml.location_id, lot_id=False, package_id=ml.package_id, owner_id=ml.owner_id, strict=True)
-                    if untracked_qty:
-                        taken_from_untracked_qty = min(
-                            untracked_qty, abs(quantity))
-                        Quant._update_available_quantity(
-                            ml.product_id, ml.location_id, -taken_from_untracked_qty, lot_id=False, package_id=ml.package_id, owner_id=ml.owner_id)
-                        Quant._update_available_quantity(
-                            ml.product_id, ml.location_id, taken_from_untracked_qty, lot_id=ml.lot_id, package_id=ml.package_id, owner_id=ml.owner_id)
-                Quant._update_available_quantity(ml.product_id, ml.location_dest_id, quantity, lot_id=ml.lot_id,
-                                                 package_id=ml.result_package_id, owner_id=ml.owner_id, in_date=in_date)
-            done_ml |= ml
-        # Reset the reserved quantity as we just moved it to the destination location.
-        (self - ml_to_delete).with_context(bypass_reservation_update=True).write({
-            'product_uom_qty': 0.00,
-            'date': fields.Datetime.now(),
-        })
+    _inherit = 'stock.location'
+    usage = fields.Selection([
+        ('supplier', 'Vendor Location'),
+        ('view', 'View'),
+        ('internal', 'Internal Location'),
+        ('customer', 'Customer Location'),
+        ('inventory', 'Inventory Loss'),
+        ('production', 'Production'),
+        ('transit', 'Transit Location'),
+        ('interwarehouse', 'Interalmacen')])
