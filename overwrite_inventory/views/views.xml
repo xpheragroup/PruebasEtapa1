@@ -327,4 +327,14 @@
         <field name="name">Administrador</field>
         <field name="category_id" ref="module_management"/>
     </record>
+
+    <record model="ir.module.category" id="inventory_adjustment">
+        <field name="name">Ajuste de inventario</field>
+        <field name="description">El usuario puede validar ajustes de inventario</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="inventory_adjustment_user" model="res.groups">
+        <field name="name">Administrador ajuste de inventario</field>
+        <field name="category_id" ref="inventory_adjustment"/>
+    </record>
 </odoo>
