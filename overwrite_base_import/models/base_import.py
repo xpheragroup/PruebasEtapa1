@@ -49,8 +49,8 @@ class Override_import(models.TransientModel):
 
         file_values = self._get_file_values()
 
-        #if self.env['overwrite_base_import.file_import'].search([('file_name', '=', file_values['file_name'])]):
-        #    raise UserError('Un archivo con este nombre ya ha sido subido.')
+        if self.env['overwrite_base_import.file_import'].search([('file_name', '=', file_values['file_name'])]):
+            raise UserError('Un archivo con este nombre ya ha sido subido.')
 
         if self.env['overwrite_base_import.file_import'].search([('file_hash', '=', file_values['file_hash'])]):
             raise UserError('Este archivo ya ha sido subido.')
