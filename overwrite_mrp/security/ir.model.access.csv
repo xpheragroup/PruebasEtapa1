@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_overwrite_mrp_cost_center,overwrite_mrp.cost_center,model_overwrite_mrp_cost_center,base.group_user,1,1,1,1
+access_overwrite_mrp_food_time,overwrite_mrp.food_time,model_overwrite_mrp_food_time,base.group_user,1,1,1,1
