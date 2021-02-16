@@ -11,7 +11,7 @@
     'author': "Xphera S.A.S.",
     'website': "http://xphera.co",
     'category': 'Base',
-    'depends': ['account', 'mrp'],
+    'depends': ['account', 'mrp', 'stock', 'product'],
     'data': [
         'security/ir.model.access.csv',
         'views/approve_material_list_view.xml'

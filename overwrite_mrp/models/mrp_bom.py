@@ -10,7 +10,7 @@ class Override_Bom(models.Model):
 
     cost_center = fields.Many2one(
         string="Centro de Costos",
-        comodel_name='overwrite_mrp.cost_center')
+        comodel_name='account.analytic.account')
 
     cycle = fields.Integer(string='Ciclo')
     
@@ -22,7 +22,8 @@ class Override_Bom(models.Model):
     state = fields.Selection(
         string='Estado', 
         selection=[('Borrador', 'Borrador'), ('Aprobado', 'Aprobado')],
-        default='Borrador')
+        default='Borrador',
+        tracking=True)
 
     approval_user = fields.Many2one(
         string='Usuario que aprueba',

@@ -7,7 +7,7 @@ from itertools import groupby
 class Override_Bom_Line(models.Model):
     _inherit = 'mrp.bom.line'
 
-    # TODO: Crear nuevo modelo y relacion 1-M
-    food_group = fields.Char(string='Grupo de Alimentos')
-
-
+    food_group = fields.Many2one(
+        string='Grupo de Alimento',
+        comodel_name='overwrite_mrp.food_group'
+        )
