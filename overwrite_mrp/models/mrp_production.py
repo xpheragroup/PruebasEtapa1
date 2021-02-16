@@ -48,5 +48,4 @@ class Override_Bom_Production(models.Model):
     def _get_move_raw_values(self, bom_line, line_data):
         data = super()._get_move_raw_values(bom_line, line_data)
         data['std_quantity'] = bom_line.product_qty * self.product_qty
-        data['fab_product'] = bom_line.bom_id.product_id
         return data
