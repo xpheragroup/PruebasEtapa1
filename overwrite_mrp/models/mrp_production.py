@@ -53,3 +53,54 @@ class Override_Bom_Production(models.Model):
         data = super()._get_move_raw_values(bom_line, line_data)
         data['std_quantity'] = bom_line.product_qty * self.product_uom_qty
         return data
+
+    @api.model
+    def create(self, values):
+        if not values.get('name', False) or values['name'] == _('New'):
+            picking_type_id = values.get('picking_type_id') or self._get_default_picking_type()
+            picking_type_id = self.env['stock.picking.type'].browse(picking_type_id)
+            if picking_type_id:
+                values['name'] = picking_type_id.sequence_id.next_by_id()
+            else:
+                values['name'] = self.env['ir.sequence'].next_by_code('mrp.production') or _('New')
+        if not values.get('procurement_group_id'):
+            procurement_group_vals = self._prepare_procurement_group_vals(values)
+            values['procurement_group_id'] = self.env["procurement.group"].create(procurement_group_vals).id
+        production = super().create(values)
+        for e in production.move_raw_ids:
+            e.write({
+                'group_id': production.procurement_group_id.id,
+                'reference': production.name,  # set reference when MO name is different than 'New'
+                'std_quantity': e.bom_line_id.product_qty * production.product_uom_qty
+            })
+        # Trigger move_raw creation when importing a file
+        if 'import_file' in self.env.context:
+            production._onchange_move_raw()
+        return production
+
+    
+    def _update_raw_move(self, bom_line, line_data):
+        """ :returns update_move, old_quantity, new_quantity """
+        quantity = line_data['qty']
+        self.ensure_one()
+        move = self.move_raw_ids.filtered(lambda x: x.bom_line_id.id == bom_line.id and x.state not in ('done', 'cancel'))
+        if move:
+            old_qty = move[0].product_uom_qty
+            remaining_qty = move[0].raw_material_production_id.product_qty - move[0].raw_material_production_id.qty_produced
+            if quantity > 0:
+                move[0].write({'product_uom_qty': quantity, 'std_quantity': quantity * move.bom_line_id.product_qty})
+                move[0]._recompute_state()
+                move[0]._action_assign()
+                move[0].unit_factor = remaining_qty and (quantity - move[0].quantity_done) / remaining_qty or 1.0
+                return move[0], old_qty, quantity
+            else:
+                if move[0].quantity_done > 0:
+                    raise UserError(_('Lines need to be deleted, but can not as you still have some quantities to consume in them. '))
+                move[0]._action_cancel()
+                move[0].unlink()
+                return self.env['stock.move'], old_qty, quantity
+        else:
+            move_values = self._get_move_raw_values(bom_line, line_data)
+            move_values['state'] = 'confirmed'
+            move = self.env['stock.move'].create(move_values)
+            return move, 0, quantity
