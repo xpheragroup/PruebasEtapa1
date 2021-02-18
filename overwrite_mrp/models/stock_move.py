@@ -21,6 +21,7 @@ class Override_StockMove(models.Model):
     def _compute_custom_values(self):
         for record in self:
             record.fab_product = record.bom_line_id.bom_id.product_id
+            record.std_quantity = record.raw_material_production_id.product_uom_qty * record.bom_line_id.product_qty
             record.missing = record.product_uom_qty - record.reserved_availability
             record.deviation = record.product_uom_qty - record.std_quantity
             record.deviation_per = record.deviation / record.std_quantity if record.std_quantity > 0 else 1
