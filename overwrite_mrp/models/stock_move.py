@@ -22,7 +22,7 @@ class Override_StockMove(models.Model):
         for record in self:
             record.fab_product = record.bom_line_id.bom_id.product_id
             record.missing = record.product_uom_qty - record.reserved_availability
-            record.deviation = record.product_qty - record.std_quantity
+            record.deviation = record.product_uom_qty - record.std_quantity
             record.deviation_per = record.deviation / record.std_quantity if record.std_quantity > 0 else 1
-            record.real_cost = record.product_qty * record.product_id.standard_price
+            record.real_cost = record.product_uom_qty * record.product_id.standard_price
             record.std_cost = record.std_quantity * record.product_id.standard_price
