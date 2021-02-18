@@ -1,5 +1,6 @@
 import datetime
 
+from itertools import groupby
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
@@ -741,3 +742,11 @@ class StockValuationLayer(models.Model):
         ('production', 'Production'),
         ('transit', 'Transit Location'),
         ('interwarehouse', 'Interalmacen')])
+
+
+class StockMove(models.Model):
+    _inherit = 'stock.move'
+
+    def _search_picking_for_assignation(self):
+        # Avoid grouping stock.pickings
+        return False
