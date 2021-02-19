@@ -18,7 +18,7 @@ class Override_Bom_Production(models.Model):
     total_real_cost = fields.Float(string='Costo total real receta', compute='_compute_real_cost')
     total_std_cost = fields.Float(string='Costo total estándar receta', compute='_compute_std_cost')
 
-    @api.depends('move_raw_ids.product_id')
+    @api.depends('move_raw_ids.std_quantity')
     def _compute_std_cost(self):
         for record in self:
             std_cost = sum(product.std_quantity * product.product_id.standard_price for product in record.move_raw_ids)
