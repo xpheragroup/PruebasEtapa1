@@ -41,3 +41,13 @@ class Override_Bom(models.Model):
                 'approval_user': self.env.user,
                 'approval_date': fields.Datetime.now()
             })
+    
+    @api.onchange(
+        'code', 'active', 'type', 'product_tmpl_id', 'product_id', 'product_qty', 'picking_type_id',
+        'bom_line_ids', 'consuption', 'create_uid', 'create_date',
+        'cost_center', 'cycle', 'state', 'food_time', 'approval_user', 'approval_date' 
+        )
+    def _onchange_anything(self):
+        self.state = 'Borrador'
+        self.approval_user = None
+        self.approval_date = None
