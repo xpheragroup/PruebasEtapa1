@@ -14,6 +14,7 @@
     'depends': ['account', 'mrp', 'stock', 'product'],
     'data': [
         'security/ir.model.access.csv',
-        'views/approve_material_list_view.xml'
+        'views/approve_material_list_view.xml',
+        'views/material_list_group_view.xml'
     ],
 }

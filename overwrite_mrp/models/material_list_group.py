@@ -5,33 +5,26 @@ class BomRegister(models.Model):
     _name = 'overwrite_mrp.bom_register'
     _description = 'A register of material list'
 
-    boms_id = fields.Many2one(
-        string='Lista',
-        comodel_name='mrp.bom'
+    boms_id = fields.Many2many(
+            string='Lista',
+            comodel_name='mrp.bom'
         )
-    
-    repetitions = fields.Integer(string='Repeticiones')
-    quantity = fields.Integer(string='Cantidad')
-    total = fields.Integer(string='Total', compute='_calc_total')
-    
+    bom_line_ids = fields.Many2many(
+            string='Lista',
+            comodel_name='mrp.bom.line'
+        )
 
     related_group = fields.Many2one(
         string='Grupo Relacionado',
         comodel_name='overwrite_mrp.bom_group'
     )
 
-    @api.depends('repetitions', 'quantity')
-    def _calc_total(self):
-        for record in self:
-            record.total = record.repetitions * record.quantity
-    
-
 class BomGroup(models.Model):
 
     _name = 'overwrite_mrp.bom_group'
     _description = 'An agrupation of Bom Reister'
 
-    bom_list = fields.One2many(
+    bom_list = fields.Many2many(
         string='Listas Relacionadas',
         comodel_name='overwrite_mrp.bom_register',
         inverse_name='related_group'

@@ -32,7 +32,6 @@ class Override_Bom(models.Model):
     
     approval_date = fields.Datetime(string='Fecha de aprobación')
 
-
     def approve_list(self):
         register = self.env['mrp.bom'].search([('id', '=', self.id)])
         if register.state != 'Aprobado':
