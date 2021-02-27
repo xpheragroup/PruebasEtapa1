@@ -24,20 +24,19 @@
                             <span class="o_form_label">Registro de lista de material:</span>
                         </div>
 
-                        <group string="Datos de Formulación">
-                            <group>
-                                <field name="related_group"/>
-                                <field name="bom_line_ids" widget="many2many">
+                        <notebook>
+                            <page string="Listas asociadas">
+                                <field name="boms_id" widget="many2many" string="">
                                     <tree string="Áreas" editable="bottom">
                                         <field name="company_id" invisible="1"/>
-                                        <field width="300px"  name="product_id" string="Producto"/>
+                                        <field width="300px"  name="product_tmpl_id" string="Producto"/>
                                         <field name="repetitions" />
                                         <field name="quantity" />
                                         <field name="total" sum="Total" />
                                     </tree>
                                 </field>
-                            </group>
-                        </group>
+                            </page>
+                        </notebook>
                     </sheet>
                 </form>
             </field>

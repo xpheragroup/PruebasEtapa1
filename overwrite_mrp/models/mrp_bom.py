@@ -32,6 +32,15 @@ class Override_Bom(models.Model):
     
     approval_date = fields.Datetime(string='Fecha de aprobación')
 
+    repetitions = fields.Integer(string='Repeticiones')
+    quantity = fields.Integer(string='Cantidad')
+    total = fields.Integer(string='Total', compute='_calc_total')
+
+    @api.depends('repetitions', 'quantity')
+    def _calc_total(self):
+        for record in self:
+            record.total = record.repetitions * record.quantity
+
     def approve_list(self):
         register = self.env['mrp.bom'].search([('id', '=', self.id)])
         if register.state != 'Aprobado':

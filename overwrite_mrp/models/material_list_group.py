@@ -14,11 +14,6 @@ class BomRegister(models.Model):
             comodel_name='mrp.bom.line'
         )
 
-    related_group = fields.Many2one(
-        string='Grupo Relacionado',
-        comodel_name='overwrite_mrp.bom_group'
-    )
-
 class BomGroup(models.Model):
 
     _name = 'overwrite_mrp.bom_group'
