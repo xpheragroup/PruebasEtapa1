@@ -32,8 +32,8 @@ class Override_Bom(models.Model):
     
     approval_date = fields.Datetime(string='Fecha de aprobación')
 
-    repetitions = fields.Integer(string='Repeticiones')
-    quantity = fields.Integer(string='Cantidad')
+    repetitions = fields.Integer(string='Repeticiones', default=0)
+    quantity = fields.Integer(string='Cantidad', default=0)
     total = fields.Integer(string='Total', compute='_calc_total')
 
     @api.depends('repetitions', 'quantity')

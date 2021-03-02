@@ -1,19 +1,5 @@
 <odoo>
     <data>
-
-      <!-- Vista de lista para Registrosd e la lista de materiales -->
-        <record model="ir.ui.view" id="overwrite_mrp.bom_register_list">
-          <field name="name">Lista de Registros de la lista de materiales</field>
-          <field name="model">overwrite_mrp.bom_register</field>
-          <field name="arch" type="xml">
-            <tree string="Información general">
-<!--              <field name="related_group" placeholder="Grupo Relacionado"/>-->
-              <field name="id" placeholder="ID"/>
-            </tree>
-          </field>
-        </record>
-
-
         <record id="material_list_group_form" model="ir.ui.view">
             <field name="name">overwrite_mrp.bom_register.form</field>
             <field name="model">overwrite_mrp.bom_register</field>
@@ -42,8 +28,6 @@
             </field>
         </record>
 
-
-        <!-- GESTIÓN Registros -->
         <record model="ir.actions.act_window" id="overwrite_mrp.register_action_window">
           <field name="name">Gestión Registros</field>
           <field name="res_model">overwrite_mrp.bom_register</field>
@@ -54,20 +38,7 @@
               </p>
           </field>
         </record>
-        <!-- GESTIÓN Grupos -->
-        <record model="ir.actions.act_window" id="overwrite_mrp.bom_group_action_window">
-          <field name="name">Gestión Registros</field>
-          <field name="res_model">overwrite_mrp.bom_group</field>
-          <field name="view_mode">list,form</field>
-          <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
-                  No hay ningún Grupo creado.
-              </p>
-          </field>
-        </record>
 
-        <menuitem name="Listas" id="overwrite_mrp.menu_register_list" parent="mrp.menu_mrp_root"/>
-        <menuitem name="Registros" id="overwrite_mrp.menu_register_sublist" parent="overwrite_mrp.menu_register_list" action="overwrite_mrp.register_action_window"/>
-        <menuitem name="Grupos" id="overwrite_mrp.menu_group_list" parent="overwrite_mrp.menu_register_list" action="overwrite_mrp.bom_group_action_window"/>
+        <menuitem name="Menus" id="overwrite_mrp.menu_register_list" parent="mrp.menu_mrp_root" action="overwrite_mrp.register_action_window"/>
     </data>
 </odoo>
