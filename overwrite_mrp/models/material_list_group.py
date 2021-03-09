@@ -12,6 +12,14 @@ class BomRegister(models.Model):
         )
 
     def add_product(data, bom, total):
+        """Añade los datos relevantes de un producto al diccionario 'data'.
+
+        Parametros:
+        data: dict      -- Diccionario de datos
+        bom: mrp.bom    -- Lista de materiales de la que proviene el producto
+        total:int       -- Cantidad total de veces que se repetira la lista
+        
+        """
         if bom.product_id.id in data:
             data[bom.product_id.id]['qty'] += bom.product_qty * total
         else:
@@ -24,6 +32,11 @@ class BomRegister(models.Model):
 
     ##TODO: Para la cantidad reservada recorrer los stock_moves de las listas (sacar asi los productos?)
     def get_all_products(self):
+        """Extrae toda la información de los productos relacionados en un BomRegister.
+
+        La información aqui extraida está destinada a ser usada en el informe de Necesidad de compra
+        
+        """
         boms = []
         products = {}
         for bom in self.boms_id:
@@ -36,7 +49,7 @@ class BomRegister(models.Model):
                     BomRegister.add_product(products, child_bom, bom.total)
             
         data = {'material_lists': boms, 'products': products}
-        print(data)
+        # print(data)
         return data
 
 
