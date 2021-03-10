@@ -42,9 +42,10 @@
             <table class="table table-sm">
                 <thead>
                     <tr>
+                        <th>Almacen</th>
                         <th>Producto</th>
                         <th>Disponible</th>
-                        <th>Reservado</th>
+                        <!--th>Reservado</th-->
                         <th>Por comprar</th>
                         <th>Total Requerido</th>
                         <th>Unidad de Medida</th>
@@ -53,16 +54,19 @@
                 <tbody>
                     <tr t-foreach="products" t-as="product">
                         <th>
+                            <span t-esc="products[product]['warehouse']"/>
+                        </th>
+                        <th>
                             <span t-esc="products[product]['product'].name"/>
                         </th>
                         <th>
-                            <span t-esc="'{:.4f}'.format(products[product]['product'].qty_available)"/>
+                            <span t-esc="'{:.4f}'.format(products[product]['availible_qty'])"/>
                         </th>
-                        <th>
+                        <!--th>
                             <span t-esc="0*0"/>
-                        </th>
+                        </th-->
                         <th>
-                            <span t-esc="'{:.4f}'.format(max(0, products[product]['qty'] - products[product]['product'].qty_available))"/>
+                            <span t-esc="'{:.4f}'.format(max(0, products[product]['qty'] - products[product]['availible_qty']))"/>
                         </th>
                         <th>
                             <span t-esc="'{:.4f}'.format(products[product]['qty'])"/>
