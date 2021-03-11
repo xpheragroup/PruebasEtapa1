@@ -20,6 +20,7 @@ class Override_Bom_Production(models.Model):
 
     @api.depends('move_raw_ids.std_quantity', 'move_raw_ids.product_id.standard_price')
     def _compute_std_cost(self):
+        """ Calcula el costo estándar a partir de los productos presentes en 'move_raw_ids'. """
         for record in self:
             std_cost = sum(product.std_quantity * product.product_id.standard_price for product in record.move_raw_ids)
             record.total_std_cost = std_cost
@@ -27,12 +28,21 @@ class Override_Bom_Production(models.Model):
 
     @api.depends('move_raw_ids.product_id', 'move_raw_ids.product_id.standard_price')
     def _compute_real_cost(self):
+        """ Calcula el costo real a partir de los productos presentes en 'move_raw_ids' y las cantidades digitadas por el usuario. """
         for record in self:
             real_cost = sum(product.product_uom_qty * product.product_id.standard_price for product in record.move_raw_ids)
             record.total_real_cost = real_cost
 
     
     def _get_moves_raw_values(self):
+        """ @Overwrite: Obtiene los ingredietes de un producto una vez es selccionado.
+        En lugar de extraer los productos en la lista de materiales se dirige a sus listas hijas
+        'child_line_ids' para poblar la lista de productos
+
+        returns:
+        list<stock.move> -- Lista de productos asociados a la orden de producción
+
+        """
         moves = []
         for production in self:
             factor = production.product_uom_id._compute_quantity(production.product_qty, production.bom_id.product_uom_id) / production.bom_id.product_qty

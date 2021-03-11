@@ -38,10 +38,12 @@ class Override_Bom(models.Model):
 
     @api.depends('repetitions', 'quantity')
     def _calc_total(self):
+        """ Calcula la multiplicacion de repeticiones y cantidad. """
         for record in self:
             record.total = record.repetitions * record.quantity
 
     def approve_list(self):
+        """ Permite poner en estado aprobado una lista de materiales. """
         register = self.env['mrp.bom'].search([('id', '=', self.id)])
         if register.state != 'Aprobado':
             register.write({
@@ -56,6 +58,7 @@ class Override_Bom(models.Model):
         'cost_center', 'cycle', 'state', 'food_time', 'approval_user', 'approval_date' 
         )
     def _onchange_anything(self):
+        """ Hace que cuando haya un cambio en cualquiera de los campos vuelva al estado borrador. """
         self.state = 'Borrador'
         self.approval_user = None
         self.approval_date = None
