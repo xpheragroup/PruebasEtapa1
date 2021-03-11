@@ -492,7 +492,7 @@ class Picking(models.Model):
         stock_location = self.env['stock.location']
         #En sale.order estaba tomando dos warehouse, se estaba duplicando el warehouse
         #para varias compañias, por lo tanto se establece the current company para que 
-        #tome unicamente un warehouse.
+        #tome unicamente un warehouse .
         company_ids = self.env.user.company_id.id
         current = stock_location.search([['id', '=', location_id and 'company_id' == company_ids]])
         while current.location_id and current.location_id.location_id:
