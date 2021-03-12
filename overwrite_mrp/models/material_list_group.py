@@ -11,6 +11,8 @@ class BomRegister(models.Model):
             comodel_name='mrp.bom'
         )
 
+    name_menu = fields.Char(String='Nombre Menú',index=True)
+
     def add_product(data, bom, total):
         """Añade los datos relevantes de un producto al diccionario 'data'.
 
