@@ -243,7 +243,7 @@ class BomRegisterXlsx(models.AbstractModel):
 
         index = 0
         for bom in lines.boms_id:
-            sheet.write(2+index,1, bom.product_id, format2)
+            sheet.write(2+index,1, bom.product_id.name, format2)
             sheet.write(2+index,2, bom.cost_center.name, format2)
             sheet.write(2+index,3, bom.cycle, format2)
             sheet.write(2+index,4, bom.quantity, format2)
@@ -284,8 +284,8 @@ class BomRegisterProductsXlsx(models.AbstractModel):
 
         index = 0
         for product in products:
-            sheet.write(2+index, 1, product.warehouse, format2)
-            sheet.write(2+index, 2, product.name, format2)
+            sheet.write(2+index, 1, product.warehouse.display_name, format2)
+            sheet.write(2+index, 2, product.product.name, format2)
             sheet.write(2+index, 3, product.availible_qty, format2)
             sheet.write(2+index, 4, product.qty - product.availible_qty, format2)
             sheet.write(2+index, 5, product.qty - product.availible_qty, format2)
