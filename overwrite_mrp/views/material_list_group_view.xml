@@ -39,6 +39,6 @@
           </field>
         </record>
 
-        <menuitem name="Menus" id="overwrite_mrp.menu_register_list" parent="mrp.menu_mrp_root" action="overwrite_mrp.register_action_window"/>
+        <menuitem name="Menús" id="overwrite_mrp.menu_register_list" parent="mrp.menu_mrp_root" action="overwrite_mrp.register_action_window"/>
     </data>
 </odoo>
