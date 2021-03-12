@@ -20,19 +20,26 @@ class BomRegister(models.Model):
         total:int       -- Cantidad total de veces que se repetira la lista
         
         """
+
         warehouse = bom.bom_id.picking_type_id[0].warehouse_id[0]
         warehouse_availible = warehouse.lot_stock_id[0].quant_ids
+
         warehouse_availible =  list(filter(lambda q: q.product_id == bom.product_id, warehouse_availible))
         availible_qty = sum(q.quantity for q in warehouse_availible)
+
+        reserved = sum(q.reserved_quantity for q in warehouse_availible)
 
         if bom.product_id.id in data:
             data[bom.product_id.id]['qty'] += bom.product_qty * total
             data[bom.product_id.id]['availible_qty'] = availible_qty
+            data[bom.product_id.id]['reserved'] = reserved
             data[bom.product_id.id]['warehouse'] = warehouse.name
+            
         else:
             data[bom.product_id.id] = {
                 'product': bom.product_id,
                 'availible_qty': availible_qty,
+                'reserved': reserved,
                 'warehouse': warehouse.name,
                 'qty': bom.product_qty * total,
                 'uom': bom.product_uom_id
