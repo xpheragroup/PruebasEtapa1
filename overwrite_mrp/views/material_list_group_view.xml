@@ -5,6 +5,14 @@
             <field name="model">overwrite_mrp.bom_register</field>
             <field name="arch" type="xml">
                 <form string="Registros de una lista de materiales" class="">
+                    <header>
+                        <button name="action_generate_xlxs" string="Generar Excel" type="object" class="oe_highlight" />
+                        <button name="action_generate_xlxs_ex" string="Generar Excel2" type="object" class="oe_highlight" />
+                        <button name="action_generate_xlxs_ex2" string="Generar Excel3" type="object" class="oe_highlight" />
+                        <button name="action_generate_xlxs_ex4" string="Generar Excel4" type="object" class="oe_highlight" />
+                        <button name="action_generate_xlxs_ex5" string="Generar Excel5" type="object" class="oe_highlight" />
+                        <button name="generate_excel_report" string="Generar Excel Report" type="object" class="oe_highlight" />
+                    </header>
                     <sheet>
                         <h1>
                             <field name="name_menu" default_focus="1" placeholder="Name"/>

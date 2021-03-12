@@ -1,10 +1,27 @@
 from odoo import api, fields, models
 import json
 
+import logging
+from io import BytesIO, StringIO
+import csv
+import io
+import xlwt
+import base64
+
+_logger = logging.getLogger(__name__)
+
+try:
+    import xlsxwriter
+except ImportError:
+    _logger.debug("Can not import xlsxwriter`.")
+
+
 class BomRegister(models.Model):
 
     _name = 'overwrite_mrp.bom_register'
     _description = 'A register of material list'
+    # _inherit = 'report.report_xlsx.abstract'
+    _rec_name = 'name_menu'
 
     boms_id = fields.Many2many(
             string='Lista',
@@ -53,7 +70,7 @@ class BomRegister(models.Model):
         """Extrae toda la información de los productos relacionados en un BomRegister.
 
         La información aqui extraida está destinada a ser usada en el informe de Necesidad de compra
-        
+
         """
         boms = []
         products = {}
@@ -65,12 +82,139 @@ class BomRegister(models.Model):
 
                 if len(child_bom.child_line_ids) == 0:
                     BomRegister.add_product(products, child_bom, bom.total)
-            
+
         data = {'material_lists': boms, 'products': products}
         # print(data)
         return data
 
+    def action_generate_xlxs_ex(self):
+        # Create a workbook and add a worksheet.
+        workbook = xlsxwriter.Workbook('Expenses01.xlsx')
+        worksheet = workbook.add_worksheet()
 
+        # Some data we want to write to the worksheet.
+        expenses = (
+            ['Rent', 1000],
+            ['Gas', 100],
+            ['Food', 300],
+            ['Gym', 50],
+        )
+
+        # Start from the first cell. Rows and columns are zero indexed.
+        row = 0
+        col = 0
+
+        # Iterate over the data and write it out row by row.
+        for item, cost in (expenses):
+            worksheet.write(row, col, item)
+            worksheet.write(row, col + 1, cost)
+            row += 1
+
+        # Write a total using a formula.
+        worksheet.write(row, 0, 'Total')
+        worksheet.write(row, 1, '=SUM(B1:B4)')
+
+        workbook.close()
+
+    def action_generate_xlxs(self):
+        xlsx_data = io.BytesIO()
+        csv_data = io.StringIO()  # on Python 2.x use `io.BytesIO()`
+
+        # XLSX part
+        workbook = xlsxwriter.Workbook(xlsx_data, {'in_memory': True})
+        worksheet = workbook.add_worksheet()
+
+        # CSV part
+        csv_writer = csv.writer(csv_data)
+
+        # Some data we want to write to the worksheet.
+        expenses = (['OriginalURL', 'NormalizedURL', 'Response', 'DuplicateOf',
+                     'SourceId', 'RelatedSources'],)
+
+        for row, data in enumerate(expenses):
+            # XSLX part
+            worksheet.write_row(row, 0, data)  # if needed, add an offset to the row/column
+
+            # CSV part
+            csv_writer.writerow(data)
+
+        workbook.close()
+
+
+    def action_generate_xlxs_ex2(self):
+        workbook = xlsxwriter.Workbook('hello.xlsx')
+        worksheet = workbook.add_worksheet()
+
+        worksheet.write('A1', 'Hello world')
+
+        workbook.close()
+
+    def action_generate_xlxs_ex4(self):
+        workbook = xlsxwriter.Workbook('protection.xlsx')
+        worksheet = workbook.add_worksheet()
+
+        # Create some cell formats with protection properties.
+        unlocked = workbook.add_format({'locked': False})
+        hidden = workbook.add_format({'hidden': True})
+
+        # Format the columns to make the text more visible.
+        worksheet.set_column('A:A', 40)
+
+        # Turn worksheet protection on.
+        worksheet.protect()
+
+        # Write a locked, unlocked and hidden cell.
+        worksheet.write('A1', 'Cell B1 is locked. It cannot be edited.')
+        worksheet.write('A2', 'Cell B2 is unlocked. It can be edited.')
+        worksheet.write('A3', "Cell B3 is hidden. The formula isn't visible.")
+
+        worksheet.write_formula('B1', '=1+2')  # Locked by default.
+        worksheet.write_formula('B2', '=1+2', unlocked)
+        worksheet.write_formula('B3', '=1+2', hidden)
+
+        workbook.close()
+
+    def action_generate_xlxs_ex5(self):
+        stream = io.StringIO()
+        book = xlwt.Workbook(encoding='utf-8')
+        sheet = book.add_sheet(u'Sheet1')
+        expenses = (['OriginalURL', 'NormalizedURL', 'Response', 'DuplicateOf',
+                     'SourceId', 'RelatedSources'],)
+
+        for row, data in enumerate(expenses):
+            # XSLX part
+            # worksheet.write_row(row, 0, data)
+            sheet.write(row, 0, data)
+
+        book.save(stream)
+        # base64.encodestring(stream.getvalue())
+        # self.nam
+
+    def generate_excel_report(self):
+        filename = 'filename.xls'
+        workbook = xlwt.Workbook(encoding="UTF-8")
+        worksheet = workbook.add_sheet('Sheet 1')
+        style = xlwt.easyxf('font: bold True, name Arial;')
+        worksheet.write_merge(0, 1, 0, 3, 'your data that you want to show into excelsheet', style)
+        fp = io.StringIO()
+        workbook.save(fp)
+        record_id = self.env['wizard.excel.report'].create({'excel_file': base64.encodestring(fp.getvalue()),
+                                                            'file_name': filename}, )
+        fp.close()
+        return {'view_mode': 'form',
+                'res_id': record_id,
+                'res_model': 'wizard.excel.report',
+                'view_type': 'form',
+                'type': 'ir.actions.act_window',
+                'context': context,
+                'target': 'new',
+                }
+
+
+class wizard_excel_report(models.Model):
+    _name = "wizard.excel.report"
+    excel_file = fields.Binary('excel file')
+    file_name = fields.Char('Excel File', size=64)
 
 ### This model Should not exist
 class BomGroup(models.Model):
