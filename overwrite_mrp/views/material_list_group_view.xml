@@ -6,7 +6,7 @@
             string="Imprimir a XLSX"
             report_type="xlsx"
             name="overwrite_mrp.menu_xlsx"
-            file="menu_xlsx"
+            file="overwrite_mrp.menu_xlsx"
             attachment_use="False"
         />
 

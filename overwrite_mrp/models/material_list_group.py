@@ -221,3 +221,15 @@ class BomGroup(models.Model):
 
     _name = 'overwrite_mrp.bom_group'
     _description = 'This model Should not exist'
+
+class BomRegisterXlsx(models.AbstractModel):
+    _name = 'report.overwrite_mrp.menu_xlsx'
+    _inherit = 'report.report_xlsx.abstract'
+
+    def generate_xlsx_report(self, workbook, data, lines):
+        # One sheet by partner
+        format1 = workbook.add_format({'font_size': 14, 'align': 'vcenter', 'bold': True})
+        format2 = workbook.add_format({'font_size': 14, 'align': 'vcenter', })
+        sheet = workbook.add_worksheet('Menú')
+        sheet.write(2, 2, 'Menú', format1)
+        sheet.write(2, 3, lines.name_menu, format2)
