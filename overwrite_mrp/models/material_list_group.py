@@ -227,7 +227,7 @@ class BomRegisterXlsx(models.AbstractModel):
     _inherit = 'report.report_xlsx.abstract'
 
     def generate_xlsx_report(self, workbook, data, lines):
-        print('lines: ' + lines)
+        # print('lines: ', lines)
         # One sheet by partner
         format1 = workbook.add_format({'font_size': 14, 'align': 'vcenter', 'bold': True})
         format11 = workbook.add_format({'font_size': 12, 'align': 'vcenter', 'bold': True})
@@ -247,7 +247,7 @@ class BomRegisterProductsXlsx(models.AbstractModel):
     _inherit = 'report.report_xlsx.abstract'
 
     def generate_xlsx_report(self, workbook, data, lines):
-        print('lines: ' + lines)
+        # print('lines: ', lines)
         # One sheet by partner
         format1 = workbook.add_format({'font_size': 14, 'align': 'vcenter', 'bold': True})
         format11 = workbook.add_format({'font_size': 12, 'align': 'vcenter', 'bold': True})
