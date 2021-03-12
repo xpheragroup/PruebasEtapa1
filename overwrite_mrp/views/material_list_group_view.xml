@@ -10,7 +10,7 @@
             attachment_use="False"
         />
         <report
-            id="menu_xlsx"
+            id="productos_menu_xlsx"
             model="overwrite_mrp.bom_register"
             string="Imprimir Productos Menús a XLSX"
             report_type="xlsx"
