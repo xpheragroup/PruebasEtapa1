@@ -230,8 +230,8 @@ class BomRegisterXlsx(models.AbstractModel):
         # One sheet by partner
         format1 = workbook.add_format({'font_size': 14, 'align': 'vcenter', 'bold': True})
         format11 = workbook.add_format({'font_size': 12, 'align': 'vcenter', 'bold': True})
-        format2 = workbook.add_format({'font_size': 14, 'align': 'vcenter', })
-        sheet = workbook.add_worksheet('Menú')
+        format2 = workbook.add_format({'font_size': 12, 'align': 'vcenter', })
+        sheet = workbook.add_worksheet('Menús')
         sheet.write(0, 0, 'Menús', format1)
         sheet.write(1, 1, 'Producto', format11)
         sheet.write(1, 2, 'Centro de Costos', format1)
@@ -239,12 +239,25 @@ class BomRegisterXlsx(models.AbstractModel):
         sheet.write(1, 4, 'Cantidad', format11)
         sheet.write(1, 5, 'Repeticiones', format11)
         sheet.write(1, 6, 'Total', format11)
+        sheet.write(2,1, boms_id, format2)
+
+class BomRegisterProductsXlsx(models.AbstractModel):
+    _name = 'report.overwrite_mrp.productos_menu_xlsx'
+    _inherit = 'report.report_xlsx.abstract'
+
+    def generate_xlsx_report(self, workbook, data, lines):
+        # One sheet by partner
+        format1 = workbook.add_format({'font_size': 14, 'align': 'vcenter', 'bold': True})
+        format11 = workbook.add_format({'font_size': 12, 'align': 'vcenter', 'bold': True})
+        format2 = workbook.add_format({'font_size': 12, 'align': 'vcenter', })
+        sheet = workbook.add_worksheet('Menú ' + self.name_menu)
         # DATA POR FILA
-        sheet.write(3, 0, 'Productos', format1)
-        sheet.write(4, 1, 'Almacén', format11)
-        sheet.write(4, 1, 'Producto', format11)
-        sheet.write(4, 1, 'Total Requerido', format11)
-        sheet.write(4, 1, 'Reservado', format11)
-        sheet.write(4, 1, 'Disponible', format11)
-        sheet.write(4, 1, 'Por comprar', format11)
-        sheet.write(4, 1, 'Unidades de Medida', format11)
+        sheet.write(0, 0, 'Productos', format1)
+        sheet.write(1, 1, 'Almacén', format11)
+        sheet.write(1, 2, 'Producto', format11)
+        sheet.write(1, 3, 'Total Requerido', format11)
+        sheet.write(1, 4, 'Reservado', format11)
+        sheet.write(1, 5, 'Disponible', format11)
+        sheet.write(1, 6, 'Por comprar', format11)
+        sheet.write(1, 7, 'Unidades de Medida', format11)
+        sheet.write(2, 1, self.get_all_products(), format2)
