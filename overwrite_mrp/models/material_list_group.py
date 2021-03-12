@@ -240,7 +240,17 @@ class BomRegisterXlsx(models.AbstractModel):
         sheet.write(1, 4, 'Cantidad', format11)
         sheet.write(1, 5, 'Repeticiones', format11)
         sheet.write(1, 6, 'Total', format11)
-        sheet.write(2,1, lines.boms_id, format2)
+
+        index = 0
+        for bom in lines.boms_id:
+            sheet.write(2+index,1, bom.product_id, format2)
+            sheet.write(2+index,2, bom.cost_center.name, format2)
+            sheet.write(2+index,3, bom.cycle, format2)
+            sheet.write(2+index,4, bom.quantity, format2)
+            sheet.write(2+index,5, bom.repetitions, format2)
+            sheet.write(2+index,6, bom.total, format2)
+
+            index = index + 1
 
 class BomRegisterProductsXlsx(models.AbstractModel):
     _name = 'report.overwrite_mrp.productos_menu_xlsx'
@@ -262,4 +272,23 @@ class BomRegisterProductsXlsx(models.AbstractModel):
         sheet.write(1, 5, 'Disponible', format11)
         sheet.write(1, 6, 'Por comprar', format11)
         sheet.write(1, 7, 'Unidades de Medida', format11)
-        sheet.write(2, 1, lines.get_all_products(), format2)
+
+        products = {}
+        for bom in lines.boms_id:
+            for child_bom in bom.bom_line_ids:
+                for inner_bom in child_bom.child_line_ids:
+                    BomRegister.add_product(products, inner_bom, bom.total)
+
+                if len(child_bom.child_line_ids) == 0:
+                    BomRegister.add_product(products, child_bom, bom.total)
+
+        index = 0
+        for product in products:
+            sheet.write(2+index, 1, product.warehouse, format2)
+            sheet.write(2+index, 2, product.name, format2)
+            sheet.write(2+index, 3, product.availible_qty, format2)
+            sheet.write(2+index, 4, product.qty - product.availible_qty, format2)
+            sheet.write(2+index, 5, product.qty - product.availible_qty, format2)
+            sheet.write(2+index, 6, product.qty, format2)
+            sheet.write(2+index, 7, product.uom.name, format2)
+            index = index + 1
