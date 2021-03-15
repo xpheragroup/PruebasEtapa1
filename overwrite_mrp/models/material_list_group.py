@@ -282,14 +282,14 @@ class BomRegisterProductsXlsx(models.AbstractModel):
                 if len(child_bom.child_line_ids) == 0:
                     BomRegister.add_product(products, child_bom, bom.total)
 
-        _logger.debug(products)
+        _logger.critical(products)
 
         data = lines.get_all_products()
 
-        _logger.debug(products)
+        _logger.critical(data['products'])
 
         index = 0
-        for product in data.products:
+        for product in data['products']:
             sheet.write(2 + index, 1, product.warehouse.display_name, format2)
             sheet.write(2 + index, 2, product.product.name, format2)
             sheet.write(2 + index, 3, product.availible_qty, format2)
