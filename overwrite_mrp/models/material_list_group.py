@@ -288,9 +288,9 @@ class BomRegisterProductsXlsx(models.AbstractModel):
         for product in data['products']:
             sheet.write(2 + index, 1, data['products'][product]['warehouse'], format2)
             sheet.write(2 + index, 2, data['products'][product]['product'].name, format2)
-            sheet.write(2 + index, 3, data['products'][product]['availible_qty'], format2)
+            sheet.write(2 + index, 3, data['products'][product]['qty'], format2)
             sheet.write(2 + index, 4, data['products'][product]['reserved'], format2)
-            sheet.write(2 + index, 5, max(0, data['products'][product]['qty'] - data['products'][product]['availible_qty']), format2)
-            sheet.write(2 + index, 6, data['products'][product]['qty'], format2)
+            sheet.write(2 + index, 5, data['products'][product]['availible_qty'], format2)
+            sheet.write(2 + index, 6, max(0, data['products'][product]['qty'] - data['products'][product]['availible_qty']), format2)
             sheet.write(2 + index, 7, data['products'][product]['uom'].name, format2)
             index = index + 1
