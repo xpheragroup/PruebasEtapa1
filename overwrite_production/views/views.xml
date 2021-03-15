@@ -164,6 +164,14 @@
                                     <field name="picking_type_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                     <field name="location_src_id" options="{'no_create': True}" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                     <field name="location_dest_id" options="{'no_create': True}" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    <field name="user_rev" option="{'no_create': True}">
+                                    <field name="date_rev" option="{'no_create': True}">
+                                    <field name="user_apr" option="{'no_create': True}">
+                                    <field name="date_apr" option="{'no_create': True}">
+                                    <field name="user_con" option="{'no_create': True}">
+                                    <field name="date_con" option="{'no_create': True}">
+                                    <field name="user_ter" option="{'no_create': True}">
+                                    <field name="date_ter" option="{'no_create': True}">
                                 </group>
                             </group>
                         </page>

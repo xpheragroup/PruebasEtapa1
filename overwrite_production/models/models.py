@@ -52,6 +52,8 @@ class MrpProduction(models.Model):
     date_rev = fields.Datetime(string='Fecha revisó')
     user_apr = fields.Many2one('res.users', string='Aprobó', required=False)
     date_apr = fields.Datetime(string='Fecha aprobó')
+    user_con = fields.Many2one('res.users', string='Confirmó', required=False)
+    date_con = fields.Datetime(string='Fecha confirmó')
     user_ter = fields.Many2one('res.users', string='Terminó', required=False)
     date_ter = fields.Datetime(string='Fecha terminó')
 
@@ -87,19 +89,24 @@ class MrpProduction(models.Model):
         self._check_company()
         for mrp in self:
             mrp.write({'state': 'review'})
+            mrp.write({'user_rev': self.env.uid})
+            mrp.write({'date_rev': datetime.datetime.now()})
         return True
     
     def to_approv(self):
         self._check_company()
         for mrp in self:
             mrp.write({'state': 'approv'})
-            mrp.write({'user_rev': self.env.uid})
-            mrp.write({'date_rev': datetime.datetime.now()})
+            mrp.write({'user_apr': self.env.uid})
+            mrp.write({'date_apr': datetime.datetime.now()})
         return True
     
     def action_confirm(self):
         self._check_company()
+        for mrp in self:
+            mrp.write({'date_con': datetime.datetime.now()})
         for production in self:
+            production.write({'user_con': self.env.uid})
             if not production.move_raw_ids:
                 raise UserError(_("Add some materials to consume before marking this MO as to do."))
             for move_raw in production.move_raw_ids:
