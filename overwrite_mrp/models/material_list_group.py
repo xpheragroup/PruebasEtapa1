@@ -282,19 +282,15 @@ class BomRegisterProductsXlsx(models.AbstractModel):
                 if len(child_bom.child_line_ids) == 0:
                     BomRegister.add_product(products, child_bom, bom.total)
 
-        _logger.critical(products)
-
         data = lines.get_all_products()
-
-        _logger.critical(data['products'])
 
         index = 0
         for product in data['products']:
-            sheet.write(2 + index, 1, product.warehouse.display_name, format2)
-            sheet.write(2 + index, 2, product.product.name, format2)
-            sheet.write(2 + index, 3, product.availible_qty, format2)
-            sheet.write(2 + index, 4, product.qty - product.availible_qty, format2)
-            sheet.write(2 + index, 5, product.qty - product.availible_qty, format2)
-            sheet.write(2 + index, 6, product.qty, format2)
-            sheet.write(2 + index, 7, product.uom.name, format2)
+            sheet.write(2 + index, 1, data['products'][product]['warehouse'], format2)
+            sheet.write(2 + index, 2, data['products'][product]['product'].name, format2)
+            sheet.write(2 + index, 3, data['products'][product]['availible_qty'], format2)
+            sheet.write(2 + index, 4, data['products'][product]['qty'] - data['products'][product]['availible_qty'], format2)
+            sheet.write(2 + index, 5, data['products'][product]['qty'] - data['products'][product]['availible_qty'], format2)
+            sheet.write(2 + index, 6, data['products'][product]['qty'], format2)
+            sheet.write(2 + index, 7, data['products'][product]['uom'].name, format2)
             index = index + 1
