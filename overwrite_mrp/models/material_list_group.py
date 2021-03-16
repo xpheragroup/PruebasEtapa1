@@ -261,7 +261,7 @@ class BomRegisterProductsXlsx(models.AbstractModel):
         format1 = workbook.add_format({'font_size': 14, 'align': 'vcenter', 'bold': True})
         format11 = workbook.add_format({'font_size': 12, 'align': 'vcenter', 'bold': True})
         format2 = workbook.add_format({'font_size': 12, 'align': 'vcenter', })
-        sheet = workbook.add_worksheet('Menú ' + lines.name_menu)
+        sheet = workbook.add_worksheet('Menú ' + str(lines.name_menu))
         # DATA POR FILA
         sheet.write(0, 0, 'Productos', format1)
         sheet.write(1, 1, 'Almacén', format11)
