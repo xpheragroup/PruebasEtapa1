@@ -18,6 +18,29 @@ class Override_Bom_Production(models.Model):
     total_real_cost = fields.Float(string='Costo total real receta', compute='_compute_real_cost')
     total_std_cost = fields.Float(string='Costo total estándar receta', compute='_compute_std_cost')
 
+    add_product_id = fields.Many2many(
+        'product.product', string='Productos Adicionales',
+        domain="[('bom_ids', '!=', False), ('bom_ids.active', '=', True), ('bom_ids.type', '=', 'normal'), ('type', 'in', ['product', 'consu']), '|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+        readonly=True, check_company=True,
+        states={'draft': [('readonly', False)]})
+    add_bom_id = fields.Many2many(
+        'mrp.bom', string='Lista de materiales de productos adicionales',
+        readonly=True, states={'draft': [('readonly', False)]},
+        domain="""[
+        '&',
+            '|',
+                ('company_id', '=', False),
+                ('company_id', '=', company_id),
+            '&',
+                '|',
+                    ('product_id','=',add_product_id),
+                    '&',
+                        ('product_tmpl_id.product_variant_ids','=',add_product_id),
+                        ('product_id','=',False),
+        ('type', '=', 'normal')]""",
+        check_company=True,
+        help="Permite agregar las listas de materiales de los productos adicionales a la orden de producción.")
+
     @api.depends('move_raw_ids.std_quantity', 'move_raw_ids.product_id.standard_price')
     def _compute_std_cost(self):
         """ Calcula el costo estándar a partir de los productos presentes en 'move_raw_ids'. """
@@ -47,6 +70,13 @@ class Override_Bom_Production(models.Model):
         for production in self:
             factor = production.product_uom_id._compute_quantity(production.product_qty, production.bom_id.product_uom_id) / production.bom_id.product_qty
             boms, lines = production.bom_id.explode(production.product_id, factor, picking_type=production.bom_id.picking_type_id)
+            if production.add_bom_id:
+                for add_pro in production.add_bom_id:
+                    factor2 = production.product_uom_id._compute_quantity(production.product_qty, add_pro.product_uom_id) / add_pro.product_qty
+                    boms2, lines2 = add_pro.explode(production.product_id, factor2, picking_type=add_pro.picking_type_id)
+                    boms += boms2
+                    lines += lines2
+            
             for bom_line, line_data in lines:
                 if bom_line.child_bom_id and bom_line.child_bom_id.type == 'phantom' or\
                         bom_line.product_id.type not in ['product', 'consu']:
@@ -57,4 +87,5 @@ class Override_Bom_Production(models.Model):
                 
                 if len(bom_line.child_line_ids) == 0:
                     moves.append(production._get_move_raw_values(bom_line, line_data))
+
         return moves
