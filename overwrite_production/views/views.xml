@@ -14,18 +14,6 @@
             </xpath>
         </field>
     </record>
-    
-    <record model="ir.ui.view" id="mrp_production_form_view_inherit_add_product_id">
-        <field name="name">mrp.production.form</field>
-        <field name="model">mrp.production</field>
-        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='bom_id']" position="after">
-                <field name="add_product_id" widget="many2many_tags" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
-                <field name="add_bom_id" widget="many2many_tags" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="1"/>
-            </xpath>
-        </field>
-    </record>
     <record id="mrp.mrp_production_form_view" model="ir.ui.view">
             <field name="name">mrp.production.form</field>
             <field name="model">mrp.production</field>
@@ -102,8 +90,6 @@
                             </div>
                             <field name="bom_id"
                                 context="{'default_product_tmpl_id': product_tmpl_id}" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
-                            <field name="add_product_id" widget="many2many_tags" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
-                            <field name="add_bom_id" widget="many2many_tags" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                             <field name="routing_id" groups="mrp.group_mrp_routings"/>
                         </group>
                         <group>
