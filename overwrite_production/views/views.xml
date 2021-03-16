@@ -1,19 +1,5 @@
 <odoo>
   <data>
-    <!-- Modificación al atributo readonly del campo product_uom_qty permite modificar en estado 'review' -->
-    <record id="view_stock_move_lots_inherit_product_uom_qty" model="ir.ui.view">
-        <field name="name">stock.move.lots.form.inherit.product_uom_qty</field>
-        <field name="model">stock.move</field>
-        <field name="inherit_id" ref="mrp.view_stock_move_lots" />
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='product_uom_qty']" position="attributes">
-                <attribute name="attrs">{'readonly': ['|', ('parent.state', '!=', 'draft'), ('parent.state', '!=', 'review')]}</attribute>
-            </xpath>
-            <xpath expr="//field[@name='product_id']" position="after">
-                <field name="product_uom_qty" attrs="{'readonly': ['|', ('parent.state', '!=', 'draft'), ('parent.state', '!=', 'review')]}" nolabel="1"/>
-            </xpath>
-        </field>
-    </record>
     <record id="mrp.mrp_production_form_view" model="ir.ui.view">
             <field name="name">mrp.production.form</field>
             <field name="model">mrp.production</field>
@@ -153,7 +139,7 @@
                     </group>
                     <notebook>
                         <page string="Components">
-                            <field name="move_raw_ids" context="{'final_lots': show_final_lots, 'tree_view_ref': 'mrp.view_stock_move_raw_tree', 'form_view_ref': 'mrp.view_stock_move_lots', 'default_location_id': location_src_id, 'default_location_dest_id': production_location_id, 'default_state': 'draft', 'default_raw_material_production_id': id, 'default_picking_type_id': picking_type_id}" attrs="{'readonly': ['&amp;', ('state', '!=', 'draft'), ('state', '!=', 'review')]}"/>
+                            <field name="move_raw_ids" context="{'final_lots': show_final_lots, 'tree_view_ref': 'mrp.view_stock_move_raw_tree', 'form_view_ref': 'mrp.view_stock_move_lots', 'default_location_id': location_src_id, 'default_location_dest_id': production_location_id, 'default_state': 'draft', 'default_raw_material_production_id': id, 'default_picking_type_id': picking_type_id}" attrs="{'readonly': ['&amp;', ('state', '!=', 'draft'), ('is_locked', '=', 'True')]}"/>
                         </page>
                         <page string="Finished Products">
                             <field name="finished_move_line_ids" context="{'form_view_ref': 'mrp.view_finisehd_move_line'}" attrs="{'readonly': [('is_locked', '=', True)], 'invisible': [('finished_move_line_ids', '=', [])]}">
