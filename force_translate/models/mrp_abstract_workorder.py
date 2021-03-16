@@ -45,10 +45,12 @@ class MrpAbstractWorkorderLine(models.AbstractModel):
         else:
             move_lines = self.move_id.move_line_ids.filtered(
                 lambda ml: not ml.lot_id and not ml.lot_produced_ids)
-
-        if self.lot_id.quant_ids.quantity == 0:
-            raise UserError(_('No hay existencias.'))
         if self.product_id.tracking != 'none' and not self.lot_id:
+            if not self.lot_id.quant_ids:
+                raise UserError(_('No hay existencias.'))
+            for i in self.lot_id.quant_ids:
+                if i.quantity == 0:
+                    raise UserError(_('No hay existencias.'))
             raise UserError(_('Por favor, ingrese un número de lote para %s.' %
                               self.product_id.display_name))  # The first translation is done here
         if self.lot_id and self.product_id.tracking == 'serial' and self.lot_id in self.move_id.move_line_ids.filtered(lambda ml: ml.qty_done).mapped('lot_id'):
