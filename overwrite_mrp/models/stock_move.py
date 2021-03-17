@@ -18,6 +18,13 @@ class Override_StockMove(models.Model):
     std_cost = fields.Float(string='Costo estándar', compute='_compute_custom_values', digits=(12,4))
     existence_qty = fields.Float(string='Existencias', compute='_compute_existence_qty', digits=(12,4))
 
+    
+    def to_draft_production_stock_move(self):
+        for move in self:
+            move.write({'state': 'draft'})
+            move.unlink()
+        return True
+
     @api.depends('std_quantity', 'product_qty', 'product_id.standard_price', 'product_uom_qty', 'reserved_availability', 'product_id.qty_available')
     def _compute_custom_values(self):
         """ Calcula los campos añadidos al modelo cruzando información ya existente. 

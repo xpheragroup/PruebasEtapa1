@@ -79,6 +79,7 @@ class MrpProduction(models.Model):
         self._check_company()
         for mrp in self:
             mrp.write({'state': 'draft'})
+            (mrp.move_raw_ids | mrp.move_finished_ids).to_draft_production_stock_move
             mrp.write({'user_rev': False})
             mrp.write({'user_apr': False})
             mrp.write({'date_rev': False})
