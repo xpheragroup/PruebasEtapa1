@@ -89,3 +89,24 @@ class Override_Bom_Production(models.Model):
                     moves.append(production._get_move_raw_values(bom_line, line_data))
 
         return moves
+
+    @api.onchange('bom_id', 'product_id', 'product_qty', 'product_uom_id')
+    def _onchange_move_raw(self):
+        self.move_raw_ids=None
+        if self.product_id != self._origin.product_id:
+            self.move_raw_ids = [(5,)]
+        if self.bom_id and self.product_qty > 0 :
+            # keep manual entries
+            list_move_raw = [(4, move.id) for move in self.move_raw_ids.filtered(lambda m: not m.bom_line_id)]
+            moves_raw_values = self._get_moves_raw_values()
+            move_raw_dict = {move.bom_line_id.id: move for move in self.move_raw_ids.filtered(lambda m: m.bom_line_id)}
+            for move_raw_values in moves_raw_values:
+                if move_raw_values['bom_line_id'] in move_raw_dict:
+                    # update existing entries
+                    list_move_raw += [(1, move_raw_dict[move_raw_values['bom_line_id']].id, move_raw_values)]
+                else:
+                    # add new entries
+                    list_move_raw += [(0, 0, move_raw_values)]
+            self.move_raw_ids = list_move_raw
+        else:
+            self.move_raw_ids = [(2, move.id) for move in self.move_raw_ids.filtered(lambda m: m.bom_line_id)]
