@@ -6,7 +6,7 @@ import datetime
 
 class AccountMove(models.Model):
     _inherit = "account.move"
-    
+
 
     date_order = fields.Datetime(
         'Order Date', copy=False, help="Fecha de la orden de compra.")
@@ -27,5 +27,6 @@ class AccountMove(models.Model):
 
     def action_post(self):
         super(AccountMove, self).action_post()
-        mrp.write({'register_date': datetime.datetime.now()})
+        for account_move in self:
+            account_move.write({'register_date': datetime.datetime.now()})
 
