@@ -10,7 +10,7 @@ class AccountMove(models.Model):
     date_order = fields.Datetime(
         'Order Date', copy=False, help="Fecha de la orden de compra.")
     register_date = fields.Datetime(
-        'Fecha de registro', copy=False, help="Fecha del registro de compra.")
+        'Fecha de registro', copy=False, help="Fecha del registro de compra.", readonly=True)
 
     def get_taxes(self):
         taxes = {}
