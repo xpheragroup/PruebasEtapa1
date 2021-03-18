@@ -1,4 +1,5 @@
 from odoo import models, fields
+import datetime
 
 # The original definition is done in account/models/account_move.py !
 
@@ -8,6 +9,8 @@ class AccountMove(models.Model):
 
     date_order = fields.Datetime(
         'Order Date', copy=False, help="Fecha de la orden de compra.")
+    register_date = fields.Datetime(
+        'Fecha de registro', copy=False, help="Fecha del registro de compra.")
 
     def get_taxes(self):
         taxes = {}
@@ -20,3 +23,8 @@ class AccountMove(models.Model):
                     taxes[tax.name] += line.price_unit * \
                         tax.amount * line.quantity / 100
         return [(k, v) for k, v in taxes.items()]
+
+    def action_post(self):
+        super(AccountMove, self).action_post()
+        mrp.write({'register_date': datetime.datetime.now()})
+
