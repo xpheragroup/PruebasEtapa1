@@ -47,7 +47,6 @@ class Override_Bom_Production(models.Model):
         for record in self:
             std_cost = sum(product.std_quantity * product.product_id.standard_price for product in record.move_raw_ids)
             record.total_std_cost = std_cost
-            
 
     @api.depends('move_raw_ids.product_id', 'move_raw_ids.product_id.standard_price')
     def _compute_real_cost(self):
@@ -75,8 +74,17 @@ class Override_Bom_Production(models.Model):
                     factor2 = production.product_uom_id._compute_quantity(production.product_qty, add_pro.product_uom_id) / add_pro.product_qty
                     boms2, lines2 = add_pro.explode(production.product_id, factor2, picking_type=add_pro.picking_type_id)
                     boms += boms2
-                    lines += lines2
-            
+                    lines_aux2=[]
+                    lines_aux3=[]
+                    for i in range(len(lines2)):
+                        lines_aux=[]
+                        lines_aux.append(lines2[i][0]._origin)
+                        lines_aux.append(lines2[i][1])
+                        lines_aux2.append(lines_aux)
+
+                    lines_aux3 = [tuple(e) for e in lines_aux2]
+                    lines += lines_aux3
+
             for bom_line, line_data in lines:
                 if bom_line.child_bom_id and bom_line.child_bom_id.type == 'phantom' or\
                         bom_line.product_id.type not in ['product', 'consu']:
