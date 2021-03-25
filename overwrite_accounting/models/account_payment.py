@@ -68,15 +68,8 @@ class AccountPaymentInherit(models.Model):
         payment_out = self.payment_type in ('transfer', 'outbound')
         balance_negative = account_sum - self.amount < 0
         if payment_out and balance_negative:
-            view = self.env.ref('overwrite_accounting.button_confirm_form')
-            return {
-                'type': 'ir.actions.act_window',
-                'name': "Confirmar saldo negativo",
-                'res_model': 'overwrite_accounting.button.confirm',
-                'views': [(view.id, 'form')],
-                'target': 'new',
-                'context': {'payment': self.id}
-            }
+            raise UserError(
+                'No es posible deducir el diario ya que tendría saldos negativos .')
         else:
             self.post_confirmed()
 

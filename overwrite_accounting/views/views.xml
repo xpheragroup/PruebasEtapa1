@@ -14,4 +14,27 @@
             </form>
         </field>
     </record>
+
+
+    <!--Add Credit Note-->
+
+    <!--
+    <record id="view_move_form" model="ir.ui.view">
+        <field name="name">account.move.form</field>
+        <field name="model">account.move</field>
+        <field name="arch" type="xml">
+            <form string="Account Entry">
+                <header>-->
+                    <!-- Reverse -->
+                    <!--
+                    <button name="action_reverse" string='Add Credit Note'
+                            type='object' groups="account.group_account_invoice"
+                            attrs="{'invisible': ['|','|', ('type', 'not in', ('out_invoice', 'in_invoice')), ('state', '!=', 'posted'), ('invoice_payment_state', '=', 'paid')]}"/>
+
+                </header>
+            </form>
+        </field>
+    </record>
+    -->
+
 </odoo>
