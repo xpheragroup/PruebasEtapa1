@@ -754,6 +754,7 @@ class ProductCategory(models.Model):
         'Company',
         ondelete='cascade',
     )
+    '''
     user_mod = fields.Many2one('res.users', string='Modificó', required=False)
     date_mod = fields.Datetime(string='Fecha Modificación')
 
@@ -761,7 +762,8 @@ class ProductCategory(models.Model):
     def registrar_modificacion(self):
         self.write({'user_mod': self.env.uid})
         self.write({'date_mod': datetime.datetime.today()})
-
+    '''
+    
 class StockValuationLayer(models.Model):
 
     _inherit = 'stock.valuation.layer'

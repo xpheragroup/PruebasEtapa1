@@ -338,6 +338,7 @@
         <field name="category_id" ref="inventory_adjustment"/>
     </record>
 
+    <!--
     <record id="view_category_property_form" model="ir.ui.view">
         <field name="name">product.category.property.form.inherit</field>
         <field name="model">product.category</field>
@@ -353,5 +354,6 @@
             </xpath>
         </field>
     </record>
+    -->
 
 </odoo>
