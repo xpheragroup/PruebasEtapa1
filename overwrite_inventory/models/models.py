@@ -757,10 +757,7 @@ class ProductCategory(models.Model):
     user_mod = fields.Many2one('res.users', string='Modificó', required=False)
     date_mod = fields.Datetime(string='Fecha Modificación')
 
-    @api.onchange('name','parent_id','company_id','route_ids','total_route_ids','removal_strategy_id',
-    'property_cost_method','property_valuation','property_account_creditor_price_difference_categ',
-    'property_account_income_categ_id','property_account_expense_categ_id','property_stock_account_input_categ_id',
-    'property_stock_account_output_categ_id','property_stock_valuation_account_id','property_stock_journal')
+    @api.onchange('name')
     def registrar_modificacion(self):
         self.write({'user_mod': self.env.uid})
         self.write({'date_mod': datetime.datetime.today()})
