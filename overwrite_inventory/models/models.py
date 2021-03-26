@@ -760,7 +760,7 @@ class ProductCategory(models.Model):
 
     @api.onchange('name')
     def registrar_modificacion(self):
-        self.write({'date_mod': datetime.datetime.today()})
+        self.write({'user_mod': self.env.uid})
     '''
         self.write({'user_mod': self.env.uid})
         self.write({'date_mod': datetime.datetime.today()})

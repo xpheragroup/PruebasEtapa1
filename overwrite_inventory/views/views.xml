@@ -347,8 +347,8 @@
             <xpath expr="//group[@name='account_property']" position="after">
                 <group name="traceability" >
                     <group string="Trazabilidad Modificaciones">
-                        <!--<field name="user_mod" option="{'no_create': True}"/>-->
-                        <field name="date_mod" option="{'no_create': True}"/>
+                        <field name="user_mod" option="{'no_create': True}"/>
+                        <!--<field name="date_mod" option="{'no_create': True}"/>-->
                     </group>
                 </group>
             </xpath>
