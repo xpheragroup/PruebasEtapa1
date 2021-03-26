@@ -197,8 +197,6 @@ class ProductCategory(models.Model):
     route_ids = fields.Many2many(tracking=1)
     total_route_ids = fields.Many2many(tracking=1)
     removal_strategy_id = fields.Many2one(tracking=1)
-    property_cost_method = fields.Selection(tracking=1)
-    property_valuation = fields.Selection(tracking=1)
     property_account_creditor_price_difference_categ = fields.Many2one(tracking=1)
     property_account_income_categ_id = fields.Many2one(tracking=1)
     property_account_expense_categ_id = fields.Many2one(tracking=1)
