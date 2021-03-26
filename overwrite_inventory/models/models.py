@@ -760,11 +760,10 @@ class ProductCategory(models.Model):
 
     @api.onchange('name')
     def registrar_modificacion(self):
-        self.write({'user_mod': self.env.uid})
-    '''
+        self._check_company()
         self.write({'user_mod': self.env.uid})
         self.write({'date_mod': datetime.datetime.today()})
-    '''
+
 
 class StockValuationLayer(models.Model):
 
