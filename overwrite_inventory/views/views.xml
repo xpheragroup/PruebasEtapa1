@@ -337,4 +337,21 @@
         <field name="name">Administrador ajuste de inventario</field>
         <field name="category_id" ref="inventory_adjustment"/>
     </record>
+
+    <record id="view_category_property_form" model="ir.ui.view">
+        <field name="name">product.category.property.form.inherit</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='account_property']" position="after">
+                <group name="traceability" >
+                    <group string="Trazabilidad Modificaciones">
+                        <field name="user_mod" option="{'no_create': True}"/>
+                        <field name="date_mod" option="{'no_create': True}"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>
