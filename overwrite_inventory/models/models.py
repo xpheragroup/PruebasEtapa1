@@ -754,20 +754,6 @@ class ProductCategory(models.Model):
         'Company',
         ondelete='cascade',
     )
-    
-    user_mod = fields.Many2one('res.users', string='Modificó', required=False)
-    date_mod = fields.Datetime(string='Fecha Modificación')
-
-
-    @api.depends('name', 'parent_id.complete_name')
-    def _compute_complete_name(self):
-        self.write({'user_mod': self.env.uid})
-        self.write({'date_mod': datetime.datetime.today()})
-        for category in self:
-            if category.parent_id:
-                category.complete_name = '%s / %s' % (category.parent_id.complete_name, category.name)
-            else:
-                category.complete_name = category.name
 
 
 class StockValuationLayer(models.Model):

@@ -186,3 +186,23 @@ class ProductionOver(models.Model):
                 message += '</ul>'
                 if mods > 0:
                     self.message_post(body=message)
+
+class ProductCategory(models.Model):
+    _name = "product.category"
+    _inherit = ["product.category","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    parent_id = fields.Many2one(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    route_ids = fields.Many2many(tracking=1)
+    total_route_ids = fields.Many2many(tracking=1)
+    removal_strategy_id = fields.Many2one(tracking=1)
+    property_cost_method = fields.Selection(tracking=1)
+    property_valuation = fields.Selection(tracking=1)
+    property_account_creditor_price_difference_categ = fields.Many2one(tracking=1)
+    property_account_income_categ_id = fields.Many2one(tracking=1)
+    property_account_expense_categ_id = fields.Many2one(tracking=1)
+    property_stock_account_input_categ_id = fields.Many2one(tracking=1)
+    property_stock_account_output_categ_id = fields.Many2one(tracking=1)
+    property_stock_valuation_account_id = fields.Many2one(tracking=1)
+    property_stock_journal = fields.Many2one(tracking=1)
