@@ -21,8 +21,7 @@
 
     # any module necessary for this one to work correctly
     'depends': ['base', 'product', 'stock', 'mrp',
-                'account_accountant','stock_account'
-                'account_followup'],
+                'account_accountant','stock_account'],
 
     # always loaded
     'data': [
