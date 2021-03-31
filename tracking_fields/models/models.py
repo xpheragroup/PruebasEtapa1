@@ -525,24 +525,28 @@ class AccountAnalyticDefault(models.Model):
     company_id = fields.Many2one(tracking=1)
     date_start = fields.Date(tracking=1)
     date_stop = fields.Date(tracking=1)
-'''
-class FollowupLine(models.Model):
-    _name = "account_followup.followup.line"
-    _inherit = ["account_followup.followup.line","mail.thread"]
 
-    name = fields.Char(tracking=1)
-    delay = fields.Integer(tracking=1)
+class ResPartnerBank(models.Model):
+    _name = "res.partner.bank"
+    _inherit = ["res.partner.bank","mail.thread"]
+
+    acc_number = fields.Char(tracking=1)
+    sanitized_acc_number = fields.Char(tracking=1)
+    acc_holder_name = fields.Char(tracking=1)
+    partner_id = fields.Many2one(tracking=1)
+    bank_id = fields.Many2one(tracking=1)
+    bank_name = fields.Char(tracking=1)
+    bank_bic = fields.Char(tracking=1)
+    sequence = fields.Integer(tracking=1)
+    currency_id = fields.Many2one(tracking=1)
     company_id = fields.Many2one(tracking=1)
-    sms_description = fields.Char(tracking=1)
-    description = fields.Text(tracking=1)
-    send_email = fields.Boolean(tracking=1)
-    print_letter = fields.Boolean(tracking=1)
-    send_sms = fields.Boolean(tracking=1)
-    join_invoices = fields.Boolean(tracking=1)
-    manual_action = fields.Boolean(tracking=1)
-    manual_action_note = fields.Text(tracking=1)
-    manual_action_type_id = fields.Many2one(tracking=1)
-    manual_action_responsible_id = fields.Many2one(tracking=1)
-    auto_execute = fields.Boolean(tracking=1)
-    send_letter = fields.Boolean(tracking=1)
-'''
+    qr_code_valid = fields.Boolean(tracking=1)
+    l10n_ch_postal = fields.Char(tracking=1)
+    l10n_ch_isr_subscription_chf = fields.Char(tracking=1)
+    l10n_ch_isr_subscription_eur = fields.Char(tracking=1)
+    l10n_ch_show_subscription = fields.Boolean(tracking=1)
+    l10n_ch_qr_iban = fields.Char(tracking=1)
+    aba_routing = fields.Char(tracking=1)
+    journal_id = fields.One2many(tracking=1)
+    l10n_mx_edi_clabe = fields.Char(tracking=1)
+    aba_bsb = fields.Char(tracking=1)

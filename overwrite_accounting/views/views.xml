@@ -219,11 +219,10 @@
         </field>
     </record>
 
-    <!--
-    <record id="view_account_followup_followup_line_form_inherit_snailmail" model="ir.ui.view">
-        <field name="name">ccount_followup.followup.line.form.inherit.snailmail</field>
-        <field name="model">account_followup.followup.line</field>
-        <field name="inherit_id" ref="account_followup.view_account_followup_followup_line_form"/>
+    <record id="view_res_partner_bank_form" model="ir.ui.view">
+        <field name="name">res.partner.bank.form</field>
+        <field name="model">res.partner.bank</field>
+        <field name="inherit_id" ref="base.view_partner_bank_form"/>
         <field name="arch" type="xml">
             <xpath expr="//sheet" position="after">
                 <div class="oe_chatter">
@@ -233,6 +232,6 @@
             </xpath> 
         </field>
     </record>
-    -->
+
 
 </odoo>
