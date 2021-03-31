@@ -204,3 +204,345 @@ class ProductCategory(models.Model):
     property_stock_account_output_categ_id = fields.Many2one(tracking=1)
     property_stock_valuation_account_id = fields.Many2one(tracking=1)
     property_stock_journal = fields.Many2one(tracking=1)
+
+class TransferModel(models.Model):
+    _name = "account.transfer.model"
+    _inherit = ["account.transfer.model","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    journal_id = fields.Many2one(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    date_start = fields.Date(tracking=1)
+    date_stop = fields.Date(tracking=1)
+    frequency = fields.Selection(tracking=1)
+    account_ids = fields.Many2many(tracking=1)
+    line_ids = fields.One2many(tracking=1)
+    move_ids = fields.One2many(tracking=1)
+    move_ids_count = fields.Integer(tracking=1)
+    total_percent = fields.Float(tracking=1)
+    state = fields.Selection(tracking=1)
+
+class AccountAnalyticLine(models.Model):
+    _name = "account.analytic.line"
+    _inherit = ["account.analytic.line","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    date = fields.Date(tracking=1)
+    amount = fields.Monetary(tracking=1)
+    unit_amount = fields.Float(tracking=1)
+    product_uom_id = fields.Many2one(tracking=1)
+    product_uom_category_id = fields.Many2one(tracking=1)
+    account_id = fields.Many2one(tracking=1)
+    partner_id = fields.Many2one(tracking=1)
+    user_id = fields.Many2one(tracking=1)
+    tag_ids = fields.Many2many(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    currency_id = fields.Many2one(tracking=1)
+    group_id = fields.Many2one(tracking=1)
+    so_line = fields.Many2one(tracking=1)
+    product_id = fields.Many2one(tracking=1)
+    general_account_id = fields.Many2one(tracking=1)
+    move_id = fields.Many2one(tracking=1)
+    code = fields.Char(tracking=1)
+    ref = fields.Char(tracking=1)
+    task_id = fields.Many2one(tracking=1)
+    project_id = fields.Many2one(tracking=1)
+    employee_id = fields.Many2one(tracking=1)
+    department_id = fields.Many2one(tracking=1)
+    encoding_uom_id = fields.Many2one(tracking=1)
+    holiday_id = fields.Many2one(tracking=1)
+    timesheet_invoice_id = fields.Many2one(tracking=1)
+    helpdesk_ticket_id = fields.Many2one(tracking=1)
+    employee_id = fields.Many2one(tracking=1)
+    amount = fields.Monetary(tracking=1)
+    validated = fields.Boolean(tracking=1)
+    is_timesheet = fields.Boolean(tracking=1)
+
+class AccountPaymentTerm(models.Model):
+    _name = "account.payment.term"
+    _inherit = ["account.payment.term","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    active = fields.Boolean(tracking=1)
+    note = fields.Text(tracking=1)
+    line_ids = fields.One2many(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    sequence = fields.Integer(tracking=1)
+
+class AccountTax(models.Model):
+    _name = "account.tax"
+    _inherit = ["account.tax","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    type_tax_use = fields.Selection(tracking=1)
+    amount_type = fields.Selection(tracking=1)
+    active = fields.Boolean(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    children_tax_ids = fields.Many2many(tracking=1)
+    sequence = fields.Integer(tracking=1)
+    amount = fields.Float(tracking=1)
+    description = fields.Char(tracking=1)
+    price_include = fields.Boolean(tracking=1)
+    include_base_amount = fields.Boolean(tracking=1)
+    analytic = fields.Boolean(tracking=1)
+    tax_group_id = fields.Many2one(tracking=1)
+    hide_tax_exigibility = fields.Boolean(tracking=1)
+    tax_exigibility = fields.Selection(tracking=1)
+    cash_basis_transition_account_id = fields.Many2one(tracking=1)
+    cash_basis_base_account_id = fields.Many2one(tracking=1)
+    invoice_repartition_line_ids = fields.One2many(tracking=1)
+    refund_repartition_line_ids = fields.One2many(tracking=1)
+    country_id = fields.Many2one(tracking=1)
+    l10n_it_has_exoneration = fields.Boolean(tracking=1)
+    l10n_it_law_reference = fields.Char(tracking=1)
+    l10n_cl_sii_code = fields.Integer(tracking=1)
+    tax_discount = fields.Boolean(tracking=1)
+    base_reduction = fields.Float(tracking=1)
+    amount_mva = fields.Float(tracking=1)
+    l10n_in_reverse_charge = fields.Boolean(tracking=1)
+    amount_type = fields.Selection(tracking=1)
+    python_compute = fields.Text(tracking=1)
+    python_applicable = fields.Text(tracking=1)
+    l10n_de_datev_code = fields.Char(tracking=1)
+    l10n_co_edi_type = fields.Many2one(tracking=1)
+    l10n_co_edi_country_code = fields.Char(tracking=1)
+
+class AccountFiscalPosition(models.Model):
+    _name = "account.fiscal.position"
+    _inherit = ["account.fiscal.position","mail.thread"]
+
+    sequence = fields.Integer(tracking=1)
+    name = fields.Char(tracking=1)
+    active = fields.Boolean(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    account_ids = fields.One2many(tracking=1)
+    tax_ids = fields.One2many(tracking=1)
+    note = fields.Text(tracking=1)
+    auto_apply = fields.Boolean(tracking=1)
+    vat_required = fields.Boolean(tracking=1)
+    country_id = fields.Many2one(tracking=1)
+    country_group_id = fields.Many2one(tracking=1)
+    state_ids = fields.Many2many(tracking=1)
+    zip_from = fields.Char(tracking=1)
+    zip_to = fields.Char(tracking=1)
+    states_count = fields.Integer(tracking=1)
+    is_taxcloud_configured = fields.Boolean(tracking=1)
+    is_taxcloud = fields.Boolean(tracking=1)
+
+class AccountJournal(models.Model):
+    _inherit = "account.journal"
+
+    name = fields.Char(tracking=1)
+    code = fields.Char(tracking=1)
+    active = fields.Boolean(tracking=1)
+    type = fields.Selection(tracking=1)
+    type_control_ids = fields.Many2many(tracking=1)
+    account_control_ids = fields.Many2many(tracking=1)
+    default_credit_account_id = fields.Many2one(tracking=1)
+    default_debit_account_id = fields.Many2one(tracking=1)
+    restrict_mode_hash_table = fields.Boolean(tracking=1)
+    sequence_id = fields.Many2one(tracking=1)
+    refund_sequence_id = fields.Many2one(tracking=1)
+    sequence = fields.Integer(tracking=1)
+    sequence_number_next = fields.Integer(tracking=1)
+    refund_sequence_number_next = fields.Integer(tracking=1)
+    invoice_reference_type = fields.Selection(tracking=1)
+    invoice_reference_model = fields.Selection(tracking=1)
+    currency_id = fields.Many2one(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    refund_sequence = fields.Boolean(tracking=1)
+    inbound_payment_method_ids = fields.Many2many(tracking=1)
+    outbound_payment_method_ids = fields.Many2many(tracking=1)
+    at_least_one_inbound = fields.Boolean(tracking=1)
+    at_least_one_outbound = fields.Boolean(tracking=1)
+    profit_account_id = fields.Many2one(tracking=1)
+    loss_account_id = fields.Many2one(tracking=1)
+    company_partner_id = fields.Many2one(tracking=1)
+    bank_account_id = fields.Many2one(tracking=1)
+    bank_statements_source = fields.Selection(tracking=1)
+    bank_acc_number = fields.Char(tracking=1)
+    bank_id = fields.Many2one(tracking=1)
+    post_at = fields.Selection(tracking=1)
+    alias_id = fields.Many2one(tracking=1)
+    alias_domain = fields.Char(tracking=1)
+    alias_name = fields.Char(tracking=1)
+    journal_group_ids = fields.Many2many(tracking=1)
+    secure_sequence_id = fields.Many2one(tracking=1)
+    kanban_dashboard = fields.Text(tracking=1)
+    kanban_dashboard_graph = fields.Text(tracking=1)
+    json_activity_data = fields.Text(tracking=1)
+    show_on_dashboard = fields.Boolean(tracking=1)
+    color = fields.Integer(tracking=1)
+    check_manual_sequencing = fields.Boolean(tracking=1)
+    check_sequence_id = fields.Many2one(tracking=1)
+    check_next_number = fields.Char(tracking=1)
+    check_printing_payment_method_selected = fields.Boolean(tracking=1)
+    l10n_ar_afip_pos_number = fields.Integer(tracking=1)
+    l10n_ar_afip_pos_partner_id = fields.Many2one(tracking=1)
+    l10n_ar_share_sequences = fields.Boolean(tracking=1)
+    l10n_in_import_export = fields.Boolean(tracking=1)
+    l10n_in_gstin_partner_id = fields.Many2one(tracking=1)
+    l10n_latam_use_documents = fields.Boolean(tracking=1)
+    l10n_latam_company_use_documents = fields.Boolean(tracking=1)
+    l10n_latam_country_code = fields.Char(tracking=1)
+    l10n_ch_postal = fields.Char(tracking=1)
+    l10n_se_invoice_ocr_length = fields.Integer(tracking=1)
+    pos_payment_method_ids = fields.One2many(tracking=1)
+    l10n_cl_point_of_sale_number = fields.Integer(tracking=1)
+    l10n_cl_point_of_sale_name = fields.Char(tracking=1)
+    l10n_co_edi_dian_authorization_number = fields.Char(tracking=1)
+    l10n_co_edi_dian_authorization_date = fields.Date(tracking=1)
+    l10n_co_edi_dian_authorization_end_date = fields.Date(tracking=1)
+    l10n_co_edi_min_range_number = fields.Integer(tracking=1)
+    l10n_co_edi_max_range_number = fields.Integer(tracking=1)
+    l10n_co_edi_debit_note = fields.Boolean(tracking=1)
+    l10n_mx_address_issued_id = fields.Many2one(tracking=1)
+    l10n_mx_edi_payment_method_id = fields.Many2one(tracking=1)
+
+class AccountAccount(models.Model):
+    _name = "account.account"
+    _inherit = ["account.account","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    currency_id = fields.Many2one(tracking=1)
+    code = fields.Char(tracking=1)
+    deprecated = fields.Boolean(tracking=1)
+    used = fields.Boolean(tracking=1)
+    user_type_id = fields.Many2one(tracking=1)
+    internal_type = fields.Selection(tracking=1)
+    internal_group = fields.Selection(tracking=1)
+    reconcile = fields.Boolean(tracking=1)
+    tax_ids = fields.Many2many(tracking=1)
+    note = fields.Text(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    tag_ids = fields.Many2many(tracking=1)
+    group_id = fields.Many2one(tracking=1)
+    root_id = fields.Many2one(tracking=1)
+    opening_debit = fields.Monetary(tracking=1)
+    opening_credit = fields.Monetary(tracking=1)
+    asset_model = fields.Many2one(tracking=1)
+    can_create_asset = fields.Boolean(tracking=1)
+    form_view_ref = fields.Char(tracking=1)
+    consolidation_color = fields.Integer(tracking=1)
+
+class AccountReconcileModel(models.Model):
+    _name = "account.reconcile.model"
+    _inherit = ["account.reconcile.model","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    sequence = fields.Integer(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    auto_reconcile = fields.Boolean(tracking=1)
+    to_check = fields.Boolean(tracking=1)
+    match_journal_ids = fields.Many2many(tracking=1)
+    match_amount_min = fields.Float(tracking=1)
+    match_amount_max = fields.Float(tracking=1)
+    match_label_param = fields.Char(tracking=1)
+    match_note_param = fields.Char(tracking=1)
+    match_transaction_type_param = fields.Char(tracking=1)
+    match_same_currency = fields.Boolean(tracking=1)
+    match_total_amount = fields.Boolean(tracking=1)
+    match_total_amount_param = fields.Float(tracking=1)
+    match_partner = fields.Boolean(tracking=1)
+    match_partner_ids = fields.Many2many(tracking=1)
+    match_partner_category_ids = fields.Many2many(tracking=1)
+    account_id = fields.Many2one(tracking=1)
+    journal_id = fields.Many2one(tracking=1)
+    label = fields.Char(tracking=1)
+    show_force_tax_included = fields.Boolean(tracking=1)
+    force_tax_included = fields.Boolean(tracking=1)
+    amount = fields.Float(tracking=1)
+    amount_from_label_regex = fields.Char(tracking=1)
+    decimal_separator = fields.Char(tracking=1)
+    tax_ids = fields.Many2many(tracking=1)
+    analytic_account_id = fields.Many2one(tracking=1)
+    analytic_tag_ids = fields.Many2many(tracking=1)
+    has_second_line = fields.Boolean(tracking=1)
+    second_account_id = fields.Many2one(tracking=1)
+    second_journal_id = fields.Many2one(tracking=1)
+    second_label = fields.Char(tracking=1)
+    show_second_force_tax_included = fields.Boolean(tracking=1)
+    force_second_tax_included = fields.Boolean(tracking=1)
+    second_amount = fields.Float(tracking=1)
+    second_amount_from_label_regex = fields.Char(tracking=1)
+    second_tax_ids = fields.Many2many(tracking=1)
+    second_analytic_account_id = fields.Many2one(tracking=1)
+    second_analytic_tag_ids = fields.Many2many(tracking=1)
+    number_entries = fields.Integer(tracking=1)
+    activity_type_id = fields.Many2one(tracking=1)
+
+class AccountFiscalYear(models.Model):
+    _name = "account.fiscal.year"
+    _inherit = ["account.fiscal.year","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    date_from = fields.Date(tracking=1)
+    date_to = fields.Date(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+
+class AccountBudgetPost(models.Model):
+    _name = "account.budget.post"
+    _inherit = ["account.budget.post","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    account_ids = fields.Many2many(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+
+class AccountAnalyticTag(models.Model):
+    _name = "account.analytic.tag"
+    _inherit = ["account.analytic.tag","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    color = fields.Integer(tracking=1)
+    active = fields.Boolean(tracking=1)
+    active_analytic_distribution = fields.Boolean(tracking=1)
+    analytic_distribution_ids = fields.One2many(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+
+class AccountAnalyticGroup(models.Model):
+    _name = "account.analytic.group"
+    _inherit = ["account.analytic.group","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    description = fields.Text(tracking=1)
+    parent_id = fields.Many2one(tracking=1)
+    parent_path = fields.Char(tracking=1)
+    children_ids = fields.One2many(tracking=1)
+    complete_name = fields.Char(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+
+class AccountAnalyticDefault(models.Model):
+    _name = "account.analytic.default"
+    _inherit = ["account.analytic.default","mail.thread"]
+
+    sequence = fields.Integer(tracking=1)
+    analytic_id = fields.Many2one(tracking=1)
+    analytic_tag_ids = fields.Many2many(tracking=1)
+    product_id = fields.Many2one(tracking=1)
+    partner_id = fields.Many2one(tracking=1)
+    account_id = fields.Many2one(tracking=1)
+    user_id = fields.Many2one(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    date_start = fields.Date(tracking=1)
+    date_stop = fields.Date(tracking=1)
+'''
+class FollowupLine(models.Model):
+    _name = "account_followup.followup.line"
+    _inherit = ["account_followup.followup.line","mail.thread"]
+
+    name = fields.Char(tracking=1)
+    delay = fields.Integer(tracking=1)
+    company_id = fields.Many2one(tracking=1)
+    sms_description = fields.Char(tracking=1)
+    description = fields.Text(tracking=1)
+    send_email = fields.Boolean(tracking=1)
+    print_letter = fields.Boolean(tracking=1)
+    send_sms = fields.Boolean(tracking=1)
+    join_invoices = fields.Boolean(tracking=1)
+    manual_action = fields.Boolean(tracking=1)
+    manual_action_note = fields.Text(tracking=1)
+    manual_action_type_id = fields.Many2one(tracking=1)
+    manual_action_responsible_id = fields.Many2one(tracking=1)
+    auto_execute = fields.Boolean(tracking=1)
+    send_letter = fields.Boolean(tracking=1)
+'''
