@@ -488,6 +488,12 @@ class Picking(models.Model):
     user_val = fields.Many2one('res.users', string='Validó', required=False)
     date_val = fields.Datetime(string='Fecha validó')
 
+    picking_type_id = fields.Many2one(
+        'stock.picking.type', 'Operation Type',
+        required=True, readonly=True,
+        states={'draft': [('readonly', False)]})
+
+
     def get_root_warehouse(self, location_id):
         stock_location = self.env['stock.location']
         #En sale.order estaba tomando dos warehouse, se estaba duplicando el warehouse
@@ -613,10 +619,14 @@ class Picking(models.Model):
                 quant_sum = sum(map(lambda q: q.quantity *
                                     q.product_uom_id.factor_inv, quant))
                 if quant_sum < qty_done:
+                    if self.picking_type_id.code == 'internal':
+                        raise UserError(
+                            _('Las cantidades en la ubicación origen no son suficientes para cubrir la demanda.'))
                     view = self.env.ref(
                         'overwrite_inventory.button_confirm_form_generic')
                     wiz = self.env['overwrite_inventory.button.confirm.generic'].create(
-                        {'message': 'Las cantidades en la ubicación origen no son suficientes para cubrir la demanda. Confirme para ignorar inventario negativo.'})
+                        #{'message': 'Las cantidades en la ubicación origen no son suficientes para cubrir la demanda. Confirme para ignorar inventario negativo.'})
+                        {'message': '¿Seguro que quieres validar?.'})
                     return {
                         'type': 'ir.actions.act_window',
                         'name': "Confirmar",
@@ -747,7 +757,8 @@ class Warehouse(models.Model):
 
 
 class ProductCategory(models.Model):
-    _inherit = "product.category"
+    _name = "product.category"
+    _inherit = ["product.category","mail.thread"]
 
     company_id = fields.Many2one(
         'res.company',
