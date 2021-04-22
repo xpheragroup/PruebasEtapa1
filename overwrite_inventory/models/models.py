@@ -493,6 +493,12 @@ class Picking(models.Model):
         required=True, readonly=True,
         states={'draft': [('readonly', False)]})
 
+    move_line_ids_without_package = fields.One2many('stock.move.line', 'picking_id', 'Operations without package', domain=['|',('package_level_id', '=', False), ('picking_type_entire_packs', '=', False)])
+    location_id = fields.Many2one(
+        'stock.location', "Source Location",
+        default=lambda self: self.env['stock.picking.type'].browse(self._context.get('default_picking_type_id')).default_location_src_id,
+        check_company=True, readonly=True, required=True,
+        states={'draft': [('readonly', False)]})
 
     def get_root_warehouse(self, location_id):
         stock_location = self.env['stock.location']
@@ -595,6 +601,15 @@ class Picking(models.Model):
                     _('Los movimientos intraalmacen solo la puede realizar un usuario responsable del almacen destino'))
 
     def button_validate(self):
+
+        for line in self.move_line_ids_without_package:
+            quantity_stock_picking=line.qty_done
+            id_product=line.product_id.id
+            quantity_warehouse = self.env['stock.quant'].search([('product_id.id','=',id_product),],limit=1).quantity
+
+            if quantity_warehouse < quantity_stock_picking:
+                raise UserError(_('La cantidad disponible en el almacén no es suficiente para cumplir la demanda.'))
+
         if not self.partner_id:
             products = {}
             for line in self.move_line_ids:
