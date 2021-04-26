@@ -1,11 +1,11 @@
 
 {
     'name': 'Colombian - Accounting (FJSB)',
-    'version': '0.8',
+    'version': '0.9',
     'category': 'Localization',
     'description': 'Colombian Accounting and Tax Preconfiguration (FJSB)',
     'author': 'Xphera.co',
-    'website': 'http://exphera.co',
+    'website': 'http://xphera.co',
     'depends': [
         'account',
     ],
