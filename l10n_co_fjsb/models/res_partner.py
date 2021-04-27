@@ -60,3 +60,33 @@ class ResPartner(models.Model):
             return super(ResPartner, self).check_vat()
         else:
             return True
+
+
+class AccountChartTemplate(models.Model):
+    _inherit = 'account.chart.template'
+
+    def _load(self, sale_tax_rate, purchase_tax_rate, company):
+        res = super(AccountChartTemplate, self)._load(sale_tax_rate, purchase_tax_rate, company)
+
+        # by default, anglo-saxon companies should have totals
+        # displayed below sections in their reports
+        company.totals_below_sections = True
+
+        #set a default misc journal for the tax closure
+        company.account_tax_periodicity_journal_id = company._get_default_misc_journal()
+
+        company.account_tax_periodicity_reminder_day = 3
+
+        company.use_anglo_saxon = True
+        
+        # create the recurring entry
+        vals = {
+            'company_id': company,
+            'account_tax_periodicity': company.account_tax_periodicity,
+            'account_tax_periodicity_journal_id': company.account_tax_periodicity_journal_id,
+            'use_anglo_saxon': company.use_anglo_saxon,
+            'totals_below_sections': company.use_anglo_saxon,
+        }
+        self.env['res.config.settings'].with_context(company=company)._create_edit_tax_reminder(vals)
+        company.account_tax_original_periodicity_reminder_day = company.account_tax_periodicity_reminder_day
+        return res
