@@ -80,6 +80,9 @@ class AccountChartTemplate(models.Model):
         company.use_anglo_saxon = True
 
         company.group_analytic_accounting = True
+        company.group_analytic_tags = True
+        company.module_account_budget = True
+        company.module_product_margin = True
 
         # create the recurring entry
         vals = {
@@ -89,6 +92,9 @@ class AccountChartTemplate(models.Model):
             'use_anglo_saxon': company.use_anglo_saxon,
             'totals_below_sections': company.use_anglo_saxon,
             'group_analytic_accounting': company.group_analytic_accounting,
+            'group_analytic_tags': company.group_analytic_tags,
+            'module_account_budget': company.module_account_budget,
+            'module_product_margin': company.module_product_margin,
         }
         self.env['res.config.settings'].with_context(company=company)._create_edit_tax_reminder(vals)
         company.account_tax_original_periodicity_reminder_day = company.account_tax_periodicity_reminder_day
