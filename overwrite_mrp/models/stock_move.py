@@ -17,6 +17,8 @@ class Override_StockMove(models.Model):
     real_cost = fields.Float(string='Costo real', compute='_compute_custom_values', digits=(12,4))
     std_cost = fields.Float(string='Costo estándar', compute='_compute_custom_values', digits=(12,4))
     existence_qty = fields.Float(string='Existencias', compute='_compute_existence_qty', digits=(12,4))
+    
+    comentarios = fields.Char(String='Comentarios',)
 
     def to_draft_production_stock_move(self):
         for move in self:
